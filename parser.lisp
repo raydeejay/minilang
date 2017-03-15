@@ -128,9 +128,14 @@
                 (list :else (parse-expression stream)))))))
 
 (defmethod parse-lambda ((stream parser))
-  (list :type "lambda"
-        :vars (delimited stream #\( #\) #\, 'parse-varname)
-        :body (parse-expression stream)))
+  (with-slots (input)
+      stream
+    (list :type "lambda"
+          :name (if (equal (<- :type (peek input)) "var")
+                    (<- :value (next input))
+                    nil)
+          :vars (delimited stream #\( #\) #\, 'parse-varname)
+          :body (parse-expression stream))))
 
 (defmethod parse-bool ((stream parser))
   (list :type "bool"

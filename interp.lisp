@@ -68,11 +68,25 @@
       ("||" (or a b))
       (t (error "Can't apply operator ~A" op)))))
 
+;; I know... but I can't figure out how to do it properly right now
 (defun make-lambda (env exp)
-  (lambda (&rest args)
-    (let ((params (<- :vars exp))
-          (scope (extend env)))
-      (loop :for name :in params
-         :for n :from 0
-         :do (def scope name (nth n args))
-         :finally (return (evaluate (<- :body exp) scope))))))
+  (let ((lambda-env (if (<- :name exp) (extend env) env)))
+    (if (<- :name exp)
+        (def lambda-env (<- :name exp)
+          (lambda (&rest args)
+            (let ((params (<- :vars exp))
+                  (scope (extend lambda-env)))
+              (loop :for name :in params
+                 :for n :from 0
+                 :do (def scope name (nth n args))
+                 :finally (return (evaluate (<- :body exp)
+                                            scope))))))
+        (lambda (&rest args)
+            (let ((params (<- :vars exp))
+                  (scope (extend lambda-env)))
+              (loop :for name :in params
+                 :for n :from 0
+                 :do (def scope name (nth n args))
+                 :finally (return (evaluate (<- :body exp)
+                                            scope))))))))
+
