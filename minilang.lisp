@@ -63,14 +63,19 @@ range = lambda(a, b)
                     else NIL;
 ")
 
+(defun dismiss (&rest args)
+  "Takes any number of arguments and simply ignores them, doing absolutely nothing."
+  (declare (ignore args)))
+
 ;; TODO: catch errors and don't crash the REPL
 (defun repl ()
   (catch 'quit
     (loop :with env := (base-env)
-       :initially (evaluate (parse (prelude)) env 'identity)
+       :initially (evaluate (parse (prelude)) env 'dismiss)
        :initially (format t "Welcome to the minilang REPL~%> ")
        :doing (format t "~A~%> "
                       (evaluate (parse (read-line))
                                 env
-                                (lambda (result)
-                                  (print result)))))))
+                                (lambda (x)
+                                  (fresh-line)
+                                  x))))))
