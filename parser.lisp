@@ -73,7 +73,7 @@
     (let ((tok (at-op stream)))
       (when tok
         (let ((his-prec (<- (<- :value tok)
-                                        *precedences*)))
+                            *precedences*)))
           (when (> his-prec my-prec)
             (next input)
             (return-from maybe-binary
