@@ -2,12 +2,18 @@
 
 (in-package #:minilang)
 
+;; tokenizer
+(defparameter *keywords*
+  (list "let"
+        "if" "then" "else"
+        "lambda" "λ"
+        "true" "false"))
+
 ;; helper functions used by `TOKEN-STREAM'
 (defun is-keyword (word)
   (when (member word *keywords* :test 'equal) T))
 
 (defun is-digit (ch)
-
   (when (member ch '(#\0 #\1 #\2 #\3 #\4 #\5 #\6 #\7 #\8 #\9)) T))
 
 (defun is-id-start (ch)

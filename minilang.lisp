@@ -2,12 +2,6 @@
 
 (in-package #:minilang)
 
-;; tokenizer
-(defparameter *keywords*
-  (list "if" "then" "else"
-        "lambda" "λ"
-        "true" "false"))
-
 ;; parser
 (defparameter *precedences*
   (list "=" 1
