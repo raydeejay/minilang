@@ -25,6 +25,15 @@
                (evaluate (<- :right exp) env)))
     ("lambda"
      (make-lambda env exp))
+    ("let"
+     (loop :for v :in (<- :vars exp)
+        :do (let ((scope (extend env)))
+              (def scope (<- :name v)
+                (if (<- :def v)
+                    (evaluate (<- :def v) env)
+                    nil))
+              (setf env scope)))
+     (evaluate (<- :body exp) env))
     ("if"
      (if (evaluate (<- :cond exp) env)
          (evaluate (<- :then exp) env)

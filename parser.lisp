@@ -161,6 +161,8 @@
                              (return-from inner exp)))
                           ((at-punc stream #\{)
                            (return-from inner (parse-prog stream)))
+                          ((at-kw stream "let")
+                           (return-from inner (parse-let stream)))
                           ((at-kw stream "if")
                            (return-from inner (parse-if stream)))
                           ((or (at-kw stream "true")
@@ -189,6 +191,36 @@
                        (maybe-binary stream
                                      (parse-atom stream)
                                      0))))
+
+(defmethod parse-let ((stream parser))
+  (skip-kw stream "let")
+  (with-slots (input)
+      stream
+    (if (equal (<- :type (peek input)) "var")
+        (let* ((name (<- :value (next input)))
+               (defs (delimited stream #\( #\) #\, 'parse-vardef)))
+          (list :type "call"
+                :func (list :type "lambda"
+                            :name name
+                            :vars (mapcar (curry '<- :name) defs)
+                            :body (parse-expression stream))
+                :args (mapcar (lambda (def)
+                                (or (<- :def def)
+                                    (list :type "bool"
+                                          :value "false")))
+                              defs)))
+        (list :type "let"
+              :vars (delimited stream #\( #\) #\, 'parse-vardef)
+              :body (parse-expression stream)))))
+
+(defmethod parse-vardef ((stream parser))
+  (with-slots (input)
+      stream
+    (let ((name (parse-varname stream)) def)
+      (when (at-op stream "=")
+        (next input)
+        (setf def (parse-expression stream)))
+      (list :name name :def def))))
 
 (defmethod parse-toplevel ((stream parser))
   (with-slots (input)
