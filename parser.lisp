@@ -30,9 +30,9 @@
       stream
     (let ((tok (peek input)))
       (and tok
-           (equal (assoc-value (plist-alist tok) :type) "op")
+           (equal (<- :type tok) "op")
            (or (null op)
-               (equal (assoc-value (plist-alist tok) :value) op))
+               (equal (<- :value tok) op))
            tok))))
 
 (defmethod skip-punc ((stream parser) ch)
