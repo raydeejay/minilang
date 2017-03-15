@@ -78,14 +78,22 @@
             (next input)
             (return-from maybe-binary
               (maybe-binary stream
-                            (list :type (if (equal (<- :value tok) "=")
-                                            "assign"
-                                            "binary")
-                                  :operator (<- :value tok)
-                                  :left left
-                                  :right (maybe-binary stream
-                                                       (parse-atom stream)
-                                                       his-prec))
+                            (switch ((<- :value tok) :test 'equal)
+                              ("&&"
+                               (list :type "if"
+                                     :cond left
+                                     :then (maybe-binary stream
+                                                         (parse-atom stream)
+                                                         his-prec)))
+                              (otherwise
+                               (list :type (if (equal (<- :value tok) "=")
+                                               "assign"
+                                               "binary")
+                                     :operator (<- :value tok)
+                                     :left left
+                                     :right (maybe-binary stream
+                                                          (parse-atom stream)
+                                                          his-prec))))
                             my-prec)))))
       left)))
 
