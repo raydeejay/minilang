@@ -141,8 +141,12 @@
           :body (parse-expression stream))))
 
 (defmethod parse-bool ((stream parser))
-  (list :type "bool"
-        :value (<- :value (next (slot-value stream 'input)))))
+  (with-slots (input)
+      stream
+    (list :type "bool"
+          :value (if (equal (<- :value (next input)) "false")
+                     nil
+                     T))))
 
 ;; hmmm...
 (defmethod maybe-call ((stream parser) expr)
@@ -185,7 +189,7 @@
 (defmethod parse-prog ((stream parser))
   (let ((prog (delimited stream #\{ #\} #\; 'parse-expression)))
     (case (length prog)
-      (0 (list :type "bool" :value "false"))
+      (0 +false+)
       (1 (car prog))
       (otherwise (list :type "prog" :prog prog)))))
 
@@ -209,8 +213,7 @@
                             :body (parse-expression stream))
                 :args (mapcar (lambda (def)
                                 (or (<- :def def)
-                                    (list :type "bool"
-                                          :value "false")))
+                                    +false+))
                               defs)))
         (list :type "let"
               :vars (delimited stream #\( #\) #\, 'parse-vardef)
