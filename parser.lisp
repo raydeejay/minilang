@@ -85,17 +85,20 @@
                                      :then (maybe-binary stream
                                                          (parse-atom stream)
                                                          his-prec)))
-                              ;; fix the double evaluation...
-                              ;; with a let node?
                               ;; need gensym?
                               ;; need a var name unrepresentable in minilang?
                               ("||"
-                               (list :type "if"
-                                     :cond left
-                                     :then left
-                                     :else (maybe-binary stream
-                                                         (parse-atom stream)
-                                                         his-prec)))
+                               (list :type "let"
+                                     :vars (list (list :name "Ω"
+                                                       :def left))
+                                     :body (list :type "if"
+                                                 :cond (list :type "var"
+                                                             :value "Ω")
+                                                 :then (list :type "var"
+                                                             :value "Ω")
+                                                 :else (maybe-binary stream
+                                                                     (parse-atom stream)
+                                                                     his-prec))))
                               (otherwise
                                (list :type (if (equal (<- :value tok) "=")
                                                "assign"
