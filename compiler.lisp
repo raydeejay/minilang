@@ -81,14 +81,14 @@
   (eval (list 'lambda '() (make-lisp (parse source)))))
 
 ;; hack!!
-(defparameter print 'prin1)
-(defparameter println (lambda (x) (format t "~A~%" x) x))
-(defparameter cons #'cons)
-(defparameter car #'car)
-(defparameter cdr #'cdr)
-(defun == (a b) (equal a b))
-(defun != (a b) (not (equal a b)))
-
+(sb-ext:without-package-locks
+  (defparameter print 'prin1)
+  (defparameter println (lambda (x) (format t "~A~%" x) x))
+  (defparameter cons #'cons)
+  (defparameter car #'car)
+  (defparameter cdr #'cdr)
+  (defun == (a b) (equal a b))
+  (defun != (a b) (not (equal a b))))
 
 ;; warnings are muffled to prevent spam about undefined variables,
 ;; but there could be a better way to handle this
