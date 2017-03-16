@@ -13,5 +13,6 @@
                (:file "parser")
                (:file "env")
                (:file "interp")
+               (:file "compiler")
                (:file "minilang")))
 

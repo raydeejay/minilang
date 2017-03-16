@@ -35,27 +35,10 @@
   "Standard library. To be moved to its own file later."
   "# minilang standard library
 
-# cons cells
-cons = lambda(x, y)
-         lambda(a, i, v)
-           if a == \"get\"
-              then if i == 0 then x else y
-              else if i == 0 then x = v else y = v;
-
-car = lambda(cell) cell(\"get\", 0);
-cdr = lambda(cell) cell(\"get\", 1);
-set-car! = lambda(cell, val) cell(\"set\", 0, val);
-set-cdr! = lambda(cell, val) cell(\"set\", 1, val);
-
-# NIL can be a real cons this time
-NIL = cons(0, 0);
-set-car!(NIL, NIL);
-set-cdr!(NIL, NIL);
-
-foreach = lambda(list, f)
-            if list != NIL {
-              f(car(list));
-              foreach(cdr(list), f);
+foreach = lambda(lst, f)
+            if lst != nil {
+              f(car(lst));
+              foreach(cdr(lst), f);
             };
 
 range = lambda(a, b)
