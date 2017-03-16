@@ -1,1 +1,4 @@
-This is the stub README.txt for the "minilang" project.
+# Minilang
+## A relatively small programming language
+
+Based on λanguage described at http://lisperator.net/pltut/
