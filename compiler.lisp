@@ -88,7 +88,10 @@
   (defparameter car #'car)
   (defparameter cdr #'cdr)
   (defun == (a b) (equal a b))
-  (defun != (a b) (not (equal a b))))
+  (defun != (a b) (not (equal a b)))
+  (defparameter import (lambda (name)
+                         (let ((symb (make-var name)))
+                           (eval `(defparameter ,symb ',symb))))))
 
 ;; warnings are muffled to prevent spam about undefined variables,
 ;; but there could be a better way to handle this
