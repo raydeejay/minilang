@@ -21,7 +21,7 @@
   (<- :value exp))
 
 (defun make-var (name)
-  (intern (string-upcase name)))
+  (intern (string-upcase name) 'minilang-runtime))
 
 (defun lisp-var (exp)
   (make-var (<- :value exp)))
@@ -80,18 +80,25 @@
 (defun compile-to-lambda (source)
   (eval (list 'lambda '() (make-lisp (parse source)))))
 
-;; hack!!
-(sb-ext:without-package-locks
-  (defparameter print 'prin1)
-  (defparameter println (lambda (x) (format t "~A~%" x) x))
-  (defparameter cons #'cons)
-  (defparameter car #'car)
-  (defparameter cdr #'cdr)
-  (defun == (a b) (equal a b))
-  (defun != (a b) (not (equal a b)))
-  (defparameter import (lambda (name)
-                         (let ((symb (make-var name)))
-                           (eval `(defparameter ,symb ',symb))))))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defpackage minilang-runtime
+    (:documentation "Holds minilang runtime definitions")))
+
+(defun install-primitives ()
+  (defparameter minilang-runtime::import
+    (lambda (name)
+      (eval `(defparameter ,(make-var name)
+               (find-symbol (string-upcase ,name) 'cl)))))
+  (defparameter minilang-runtime::print 'prin1)
+  (defparameter minilang-runtime::println (lambda (x) (format t "~A~%" x) x))
+  (defparameter minilang-runtime::cons #'cons)
+  (defparameter minilang-runtime::car #'car)
+  (defparameter minilang-runtime::cdr #'cdr)
+  (defun minilang-runtime::== (a b) (equal a b))
+  (defun minilang-runtime::!= (a b) (not (equal a b)))
+  (format t "~%Minilang primitives installed.~%"))
+
+(install-primitives)
 
 ;; warnings are muffled to prevent spam about undefined variables,
 ;; but there could be a better way to handle this
