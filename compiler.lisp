@@ -120,11 +120,34 @@
 
 (defun crepl ()
   (catch 'quit
-    (loop :initially
-       (install-primitives)
-       (run (prelude))
-       (format t "Welcome to the minilang REPL~%")
-       (format t "~%> ")
-       :with last-result := ""
-       :for source := (read-line)
-       :do (format t "~%~S~%> " (setf last-result (run source))))))
+    (let ((prompt ">"))
+      (loop :initially
+         (install-primitives)
+         (run (prelude))
+         (format t "Welcome to the minilang REPL~%")
+         (format t "~%~A " prompt)
+         :with last-result := ""
+         :with edit-mode := nil
+         :with source := ""
+         :for input := (read-line)
+         :do
+         (cond ((and (not edit-mode) (equal input "edit"))
+                (setf edit-mode t
+                      prompt "+"))
+               ((and edit-mode (zerop (length input)))
+                (setf edit-mode nil
+                      prompt ">"
+                      source (concatenate 'string
+                                          source
+                                          input
+                                          (list #\Newline))))
+               (t (setf source (concatenate 'string
+                                          source
+                                          input
+                                          (list #\Newline)))))
+         (if edit-mode
+             (format t "~A " prompt)
+             (progn (format t "~%~S~%~A "
+                            (setf last-result (run source))
+                            prompt)
+                    (setf source "")))))))
