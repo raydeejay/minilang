@@ -27,7 +27,7 @@
   (make-var (<- :value exp)))
 
 (defun lisp-binary (exp)
-  (list (make-var (<- :operator exp))
+  (list 'funcall (make-var (<- :operator exp))
         (lisp (<- :left exp))
         (lisp (<- :right exp))))
 
@@ -85,17 +85,28 @@
     (:documentation "Holds minilang runtime definitions")))
 
 (defun install-primitives ()
+  (defparameter minilang-runtime::nil nil)
   (defparameter minilang-runtime::import
     (lambda (name)
       (eval `(defparameter ,(make-var name)
                (find-symbol (string-upcase ,name) 'cl)))))
-  (defparameter minilang-runtime::print 'prin1)
+  (defparameter minilang-runtime::+ '+)
+  (defparameter minilang-runtime::- '-)
+  (defparameter minilang-runtime::* '*)
+  (defparameter minilang-runtime::/ '/)
+  (defparameter minilang-runtime::< '<)
+  (defparameter minilang-runtime::> '>)
+  (defparameter minilang-runtime::<= '<=)
+  (defparameter minilang-runtime::>= '>=)
+  (defparameter minilang-runtime::print 'princ)
   (defparameter minilang-runtime::println (lambda (x) (format t "~A~%" x) x))
-  (defparameter minilang-runtime::cons #'cons)
-  (defparameter minilang-runtime::car #'car)
-  (defparameter minilang-runtime::cdr #'cdr)
-  (defun minilang-runtime::== (a b) (equal a b))
-  (defun minilang-runtime::!= (a b) (not (equal a b)))
+  (defparameter minilang-runtime::cons 'cons)
+  (defparameter minilang-runtime::car 'car)
+  (defparameter minilang-runtime::cdr 'cdr)
+  (defparameter minilang-runtime::== (lambda (a b) (equal a b)))
+  (defparameter minilang-runtime::!= (lambda (a b) (not (funcall 'minilang-runtime::== a b))))
+  (defparameter minilang-runtime::quit (lambda () (throw 'quit t)))
+  (defparameter minilang-runtime::restart (lambda () (throw 'quit (crepl))))
   (format t "~%Minilang primitives installed.~%"))
 
 ;; warnings are muffled to prevent spam about undefined variables,
@@ -106,3 +117,14 @@
     (handler-bind
         ((cl:warning #'muffle-warning))
       (funcall (compile-to-lambda source)))))
+
+(defun crepl ()
+  (catch 'quit
+    (loop :initially
+       (install-primitives)
+       (run (prelude))
+       (format t "Welcome to the minilang REPL~%")
+       (format t "~%> ")
+       :with last-result := ""
+       :for source := (read-line)
+       :do (format t "~%~S~%> " (setf last-result (run source))))))
