@@ -98,8 +98,6 @@
   (defun minilang-runtime::!= (a b) (not (equal a b)))
   (format t "~%Minilang primitives installed.~%"))
 
-(install-primitives)
-
 ;; warnings are muffled to prevent spam about undefined variables,
 ;; but there could be a better way to handle this
 (defun run (source)
