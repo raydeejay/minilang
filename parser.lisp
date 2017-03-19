@@ -3,7 +3,8 @@
 (in-package #:minilang)
 
 ;; the node for boolean false, defined here because it's used all around
-(defvar +false+ (list :type "bool" :value nil))
+(defparameter minilang-runtime::nil nil)
+(defvar +false+ (list :type "bool" :value 'minilang-runtime::nil))
 
 (defclass parser ()
   ((input :accessor input :initarg :input)))

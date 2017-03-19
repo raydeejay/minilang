@@ -14,5 +14,6 @@
                (:file "env")
                (:file "interp")
                (:file "compiler")
+               (:file "cps")
                (:file "minilang")))
 
