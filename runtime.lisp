@@ -33,39 +33,6 @@
   ;; print a message for some reason... :D
   (format t "~%Minilang primitives installed.~%"))
 
-;; (defun install-cps-primitives ()
-;;   (defparameter minilang-runtime::import-op
-;;     (lambda (name)
-;;       (eval `(defparameter ,(make-var name)
-;;                (find-symbol (string-upcase ,name) 'cl)))))
-;;   (defparameter minilang-runtime::import
-;;     (lambda (name)
-;;       (eval `(defparameter ,(make-var name)
-;;                (lambda (k &rest args)
-;;                  (funcall k (apply (find-symbol (string-upcase ,name)
-;;                                                 'cl)
-;;                                    args)))))))
-;;   ;; import these functions straight from CL
-;;   (mapc minilang-runtime::import-op '("+" "-" "*" "/" "<" ">" "<=" ">="))
-;;   (mapc minilang-runtime::import '("sqrt" "expt" "max" "min"
-;;                                    "cons" "car" "cdr" "list"))
-;;   ;; these require some massaging
-;;   (defparameter minilang-runtime::gensym 'gensym%)
-;;   (defparameter minilang-runtime::== (lambda (a b) (equal a b)))
-;;   (defparameter minilang-runtime::!= (lambda (a b) (not (equal a b))))
-;;   (defprimitive "print" (lambda (v) (princ v)))
-;;   (defprimitive "println" (lambda (x) (format t "~A~%" x) x))
-;;   ;; hooks for the REPL
-;;   (defprimitive "quit" (lambda () (throw 'quit t)))
-;;   (defprimitive "restart" (lambda () (throw 'quit (crepl))))
-;;   ;; print a message for some reason... :D
-;;   (format t "~%Minilang primitives installed.~%"))
-
-(defun defprimitive (name body)
-  (eval `(defparameter ,(make-var name)
-           (lambda (k &rest args)
-             (funcall k (apply ,body args))))))
-
 ;; warnings are muffled to prevent spam about undefined variables,
 ;; but there could be a better way to handle this
 (defun run (source)
