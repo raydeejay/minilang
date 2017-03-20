@@ -4,6 +4,7 @@
 
 ;; the node for boolean false, defined here because it's used all around
 (defparameter minilang-runtime::nil nil)
+(defvar +true+ (list :type "bool" :value T))
 (defvar +false+ (list :type "bool" :value 'minilang-runtime::nil))
 
 (defclass parser ()
