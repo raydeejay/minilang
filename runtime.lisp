@@ -15,6 +15,8 @@
                                      'cl)
                         args))))))
   ;; import these functions straight from CL
+  ;; note that && and || are not imported as ops because an IF/LET AST
+  ;; node is generated for them
   (mapc minilang-runtime::import-op '("+" "-" "*" "/" "<" ">" "<=" ">="))
   (mapc minilang-runtime::import '("sqrt" "expt" "max" "min"
                                    "cons" "car" "cdr" "list"))
