@@ -38,6 +38,7 @@
     ("var" exp)
     ("binary" (opt-binary exp))
     ("prog" (opt-prog exp))
+    ("if" (opt-if exp))
     (otherwise exp)))
 
 (defun opt-binary (exp)
@@ -96,10 +97,38 @@
             (otherwise exp))
           exp))))
 
+;; there's room for improvement below here
 (defun opt-prog (exp)
-  (list :type "prog"
-        :prog (loop :for p :in (<- :prog exp)
-                 :if (not (has-side-effects p))
-                 :collect (opt p)
-                 :else
-                 :collect p)))
+  (labels ((loop% (body)
+              (declare (list body))
+              (cond ((zerop (length body))
+                     +FALSE+)
+                    ((= 1 (length body))
+                     (opt (car body)))
+                    ((not (has-side-effects (car body)))
+                     (loop% (cdr body)))
+                    (t (list :type "prog"
+                             :prog (loop :for p :in body
+                                      :collecting (opt p)))))))
+    (loop% (<- :prog exp))))
+
+(defun opt-if (exp)
+  (let ((optimized-cond (opt (<- :cond exp)))
+        (optimized-then (opt (<- :then exp)))
+        (optimized-else (opt (<- :else exp))))
+    (cond ((equal optimized-cond +TRUE+)
+           optimized-then)
+          ((or (equal optimized-cond +FALSE+)
+               ;; hmm...
+               (equal optimized-cond
+                      (list :type "bool" :value nil)))
+           (or optimized-else +FALSE+))
+          ((and (is-constant optimized-cond)
+                (not (equal optimized-cond +FALSE+)))
+           optimized-then)
+          (t (let ((new-node (list :type "if"
+                                   :cond optimized-cond
+                                   :then optimized-then)))
+               (if optimized-else
+                   (append new-node (list :else optimized-else))
+                   new-node))))))
