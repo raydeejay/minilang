@@ -48,6 +48,13 @@ foreach = lambda(lst, f)
 range = lambda(a, b, acc)
           if a <= b then range(a + 1, b, cons(a, acc))
                     else reverse(acc);
+
+# a generator version of range
+irange = lambda (a, b)
+  let (n = a - 1)
+    lambda()
+      if n < b then n = n + 1
+
 ")
 
 (defun dismiss (&rest args)
