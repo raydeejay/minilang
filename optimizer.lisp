@@ -61,6 +61,38 @@
              ;; (increase-changed)
              (list :type "num" :value (+ (num (<- :left exp))
                                          (num (<- :right exp)))))
+            ("-"
+             ;; (increase-changed)
+             (list :type "num" :value (- (num (<- :left exp))
+                                         (num (<- :right exp)))))
+            ("*"
+             ;; (increase-changed)
+             (list :type "num" :value (* (num (<- :left exp))
+                                         (num (<- :right exp)))))
+            ("/"
+             ;; (increase-changed)
+             (list :type "num" :value (/ (num (<- :left exp))
+                                         (div (<- :right exp)))))
+            ("%"
+             ;; (increase-changed)
+             (list :type "num" :value (mod (num (<- :left exp))
+                                           (div (<- :right exp)))))
+            ("<"
+             ;; (increase-changed)
+             (list :type "bool" :value (< (num (<- :left exp))
+                                          (num (<- :right exp)))))
+            (">"
+             ;; (increase-changed)
+             (list :type "bool" :value (> (num (<- :left exp))
+                                          (num (<- :right exp)))))
+            ("<="
+             ;; (increase-changed)
+             (list :type "bool" :value (<= (num (<- :left exp))
+                                          (num (<- :right exp)))))
+            (">="
+             ;; (increase-changed)
+             (list :type "bool" :value (>= (num (<- :left exp))
+                                          (num (<- :right exp)))))
             (otherwise exp))
           exp))))
 
