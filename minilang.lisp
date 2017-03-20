@@ -41,9 +41,13 @@ foreach = lambda(lst, f)
               foreach(cdr(lst), f);
             };
 
-range = lambda(a, b)
-          if a <= b then cons(a, range(a + 1, b))
-                    else NIL;
+#range = lambda(a, b)
+#          if a <= b then cons(a, range(a + 1, b))
+#                    else NIL;
+
+range = lambda(a, b, acc)
+          if a <= b then range(a + 1, b, cons(a, acc))
+                    else reverse(acc);
 ")
 
 (defun dismiss (&rest args)

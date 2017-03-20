@@ -12,8 +12,10 @@
                (:file "token-stream")
                (:file "parser")
                (:file "env")
-               (:file "interp")
+               ;; (:file "interp")
                (:file "compiler")
-               (:file "cps")
+               ;; (:file "cps")
+               (:file "optimizer")
+               (:file "runtime")
                (:file "minilang")))
 
