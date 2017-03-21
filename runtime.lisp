@@ -76,9 +76,23 @@
                                                 (list #\Newline)))))
              (if edit-mode
                  (format t "~A " prompt)
-                 (progn (format t "~%~S~%~A "
-                                ;; (setf last-result (run source))
-                                (setf last-result
-                                      (eval (make-lisp (opt (parse source)))))
-                                prompt)
-                        (setf source "")))))))))
+                 (progn
+                   (handler-case
+                       (progn (format t "~%~S~%~A "
+                                      (setf last-result
+                                            (eval
+                                             (make-lisp
+                                              (opt
+                                               (parse source)))))
+                                      prompt)
+                              (setf source ""))
+                     (unbound-variable (ex)
+                       (format t "~A~%~A " ex prompt)
+                       (setf source "")
+                       nil)
+                     (sb-int:simple-program-error (ex)
+                       (princ (string-capitalize
+                               (format nil "~A~%~A " ex prompt)
+                               :end 1))
+                       (setf source "")
+                       nil))))))))))
