@@ -62,7 +62,7 @@ irange := lambda (a, b)
   (defparameter minilang-runtime::println (lambda (x) (format t "~A~%" x) x))
   ;; hooks for the REPL
   (defparameter minilang-runtime::quit (lambda () (throw 'quit t)))
-  (defparameter minilang-runtime::restart (lambda () (throw 'quit (crepl)))))
+  (defparameter minilang-runtime::restart (lambda () (throw 'quit (repl)))))
 
 ;; warnings are muffled to prevent spam about undefined variables,
 ;; but there could be a better way to handle this
