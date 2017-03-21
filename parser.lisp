@@ -78,7 +78,7 @@
       (when tok
         (let ((his-prec (<- (<- :value tok)
                             *precedences*)))
-          (when (> his-prec my-prec)
+          (when (> (the fixnum his-prec) (the fixnum my-prec))
             (next input)
             (return-from maybe-binary
               (maybe-binary stream
@@ -126,8 +126,8 @@
        :else :do (skip-punc stream delimiter)
        :when (at-punc stream stop) :do (loop-finish)
        :collect (funcall parser-fn stream) :into exp
-       :finally (progn(skip-punc stream stop)
-                      (return exp)))))
+       :finally (progn (skip-punc stream stop)
+                       (return exp)))))
 
 ;; specific parsing methods
 (defmethod parse-call ((stream parser) func)
@@ -176,7 +176,7 @@
 
 ;; hmmm...
 (defmethod maybe-call ((stream parser) expr)
-  (let ((expr% (funcall expr)))
+  (let ((expr% (funcall (the function expr))))
     (if (at-punc stream #\()
         (parse-call stream expr%)
         expr%)))
@@ -236,7 +236,7 @@
           (list :type "call"
                 :func (list :type "lambda"
                             :name name
-                            :vars (mapcar (curry '<- :name) defs)
+                            :vars (mapcar (the function (curry '<- :name)) defs)
                             :body (parse-expression stream))
                 :args (mapcar (lambda (def)
                                 (or (<- :def def)
