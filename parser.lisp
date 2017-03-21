@@ -114,7 +114,7 @@
                                                                      (parse-atom stream)
                                                                      his-prec))))
                               (otherwise
-                               (list :type (if (equal (<- :value tok) "=")
+                               (list :type (if (equal (<- :value tok) ":=")
                                                "assign"
                                                "binary")
                                      :operator (<- :value tok)
