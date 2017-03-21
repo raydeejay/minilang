@@ -179,10 +179,9 @@
 (defmethod parse-bool ((stream parser))
   (with-slots (input)
       stream
-    (list :type "bool"
-          :value (if (equal (<- :value (next input)) "false")
-                     nil
-                     T))))
+    (if (equal (<- :value (next input)) "false")
+        +FALSE+
+        +TRUE+)))
 
 ;; hmmm...
 (defmethod maybe-call ((stream parser) expr)

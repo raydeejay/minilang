@@ -51,10 +51,12 @@ irange := lambda (a, b)
   (mapc minilang-runtime::import-op '("+" "-" "*" "/" "<" ">" "<=" ">="))
   (mapc minilang-runtime::import '("sqrt" "expt" "max" "min"
                                    "cons" "car" "cdr" "list"))
-  ;; these require some massaging
-  (defparameter minilang-runtime::gensym 'gensym%)
+  ;; these operators require some massaging
+  (defparameter minilang-runtime::% (lambda (a b) (mod a b)))
   (defparameter minilang-runtime::== (lambda (a b) (equal a b)))
   (defparameter minilang-runtime::!= (lambda (a b) (not (equal a b))))
+  ;; functions
+  (defparameter minilang-runtime::gensym 'gensym%)
   (defparameter minilang-runtime::reverse (lambda (v) (reverse v)))
   (defparameter minilang-runtime::print (lambda (v) (princ v)))
   (defparameter minilang-runtime::println (lambda (x) (format t "~A~%" x) x))
@@ -64,14 +66,18 @@ irange := lambda (a, b)
 
 ;; warnings are muffled to prevent spam about undefined variables,
 ;; but there could be a better way to handle this
+(defun compile-to-lambda (source)
+  (eval (list 'lambda '() (make-lisp (opt (parse source))))))
+
 (defun run (source)
+  "Convenience function to run a string of code from the Lisp REPL."
   (locally
       (declare #+sbcl(sb-ext:muffle-conditions cl:warning))
     (handler-bind
         ((cl:warning #'muffle-warning))
       (funcall (the function (compile-to-lambda source))))))
 
-(defun crepl ()
+(defun repl ()
   (catch 'quit
     (let ((prompt ">"))
       (locally
