@@ -70,6 +70,15 @@ irange := lambda (a, b)
                                            (- (get-internal-real-time) in)))
     "Returns the time elapsed in milliseconds.")
   ;; hooks for the REPL
+  (defparameter minilang-runtime::load (lambda (filename)
+                                         (if (probe-file filename)
+                                             (eval
+                                              (make-lisp
+                                               (opt
+                                                (parse
+                                                 (read-file-into-string filename)))))
+                                             (format t "Could not find ~A." filename)))
+    "Load minilang source from a file.")
   (defparameter minilang-runtime::quit (lambda () (throw 'quit t)))
   (defparameter minilang-runtime::restart (lambda () (throw 'quit (repl)))))
 
