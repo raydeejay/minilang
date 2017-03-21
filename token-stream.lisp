@@ -83,7 +83,9 @@
                                         (setf has-dot t))
                                     (is-digit ch))))))
       ;; return { type: "num", value: parseFloat(number) }
-      (list :type "num" :value (parse-float number)))))
+      (list :type "num" :value (if has-dot
+                                   (parse-float number)
+                                   (parse-integer number))))))
 
 (defmethod read-identifier ((stream token-stream))
   (let ((id (read-while stream 'is-id)))
