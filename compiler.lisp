@@ -75,6 +75,3 @@
 
 (defun make-lisp (exp)
   `(,@(lisp exp)))
-
-(defun compile-to-lambda (source)
-  (eval (list 'lambda '() (make-lisp (parse source)))))

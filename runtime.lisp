@@ -2,6 +2,34 @@
 
 (in-package #:minilang)
 
+(defun prelude ()
+  "Standard library. To be moved to its own file later."
+  (let ((default-prelude "# minilang standard library
+
+foreach := lambda(lst, f)
+            if lst != nil {
+              f(car(lst)).
+              foreach(cdr(lst), f)
+            }.
+
+# a tail recursive version of range that is TCO'ed by SBCL
+range := lambda(a,b)
+           (lambda range% (a, b, acc)
+             if a <= b
+               then range% (a + 1, b, cons(a, acc))
+               else reverse(acc)) (a, b, nil).
+
+# a generator version of range
+irange := lambda (a, b)
+  let (n = a - 1)
+    lambda()
+      if n < b then n := n + 1
+
+"))
+    (if (probe-file "prelude.mini")
+        (read-file-into-string "prelude.mini")
+        default-prelude)))
+
 (defun install-primitives ()
   (declare (function minilang-runtime::import)
            (function minilang-runtime::import-op))
