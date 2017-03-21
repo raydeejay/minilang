@@ -3,6 +3,9 @@
 (in-package #:minilang)
 
 (defun install-primitives ()
+  (declare (function minilang-runtime::import)
+           (function minilang-runtime::import-op))
+  (format t "~%Installing Minilang primitives.~%")
   (defparameter minilang-runtime::import-op
     (lambda (name)
       (eval `(defparameter ,(make-var name)
@@ -29,9 +32,7 @@
   (defparameter minilang-runtime::println (lambda (x) (format t "~A~%" x) x))
   ;; hooks for the REPL
   (defparameter minilang-runtime::quit (lambda () (throw 'quit t)))
-  (defparameter minilang-runtime::restart (lambda () (throw 'quit (crepl))))
-  ;; print a message for some reason... :D
-  (format t "~%Minilang primitives installed.~%"))
+  (defparameter minilang-runtime::restart (lambda () (throw 'quit (crepl)))))
 
 ;; warnings are muffled to prevent spam about undefined variables,
 ;; but there could be a better way to handle this
@@ -40,7 +41,7 @@
       (declare #+sbcl(sb-ext:muffle-conditions cl:warning))
     (handler-bind
         ((cl:warning #'muffle-warning))
-      (funcall (compile-to-lambda source)))))
+      (funcall (the function (compile-to-lambda source))))))
 
 (defun crepl ()
   (catch 'quit
@@ -62,7 +63,7 @@
              (cond ((and (not edit-mode) (equal input "edit"))
                     (setf edit-mode t
                           prompt "+"))
-                   ((and edit-mode (zerop (length input)))
+                   ((and edit-mode (zerop (length (the string input))))
                     (setf edit-mode nil
                           prompt ">"
                           source (concatenate 'string

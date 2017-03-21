@@ -74,7 +74,7 @@
 ;; dictionary
 ;; object
 (defmethod read-number ((stream token-stream))
-  (let ((has-dot))
+  (let (has-dot)
     (let ((number (read-while stream
                               (lambda (ch)
                                 (if (char= ch #\.)
