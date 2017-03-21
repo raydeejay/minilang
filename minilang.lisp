@@ -37,9 +37,9 @@
 
 foreach = lambda(lst, f)
             if lst != nil {
-              f(car(lst));
-              foreach(cdr(lst), f);
-            };
+              f(car(lst)).
+              foreach(cdr(lst), f).
+            }.
 
 #range = lambda(a, b)
 #          if a <= b then cons(a, range(a + 1, b))
@@ -47,7 +47,7 @@ foreach = lambda(lst, f)
 
 range = lambda(a, b, acc)
           if a <= b then range(a + 1, b, cons(a, acc))
-                    else reverse(acc);
+                    else reverse(acc).
 
 # a generator version of range
 irange = lambda (a, b)

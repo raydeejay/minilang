@@ -30,7 +30,7 @@
   (when (member ch '(#\+ #\- #\* #\/ #\% #\= #\& #\| #\< #\> #\!)) T))
 
 (defun is-punc (ch)
-  (when (member ch '(#\, #\; #\( #\) #\[ #\] #\{ #\})) T))
+  (when (member ch '(#\, #\; #\( #\) #\[ #\] #\{ #\} #\.)) T))
 
 (defun is-whitespace (ch)
   (when (member ch '(#\Space #\Tab #\Newline)) T))

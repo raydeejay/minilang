@@ -7,6 +7,8 @@
 (defvar +true+ (list :type "bool" :value T))
 (defvar +false+ (list :type "bool" :value 'minilang-runtime::nil))
 
+(defparameter *expression-separator* #\.)
+
 (defclass parser ()
   ((input :accessor input :initarg :input)))
 
@@ -211,7 +213,8 @@
                     (unexpected stream))))))
 
 (defmethod parse-prog ((stream parser))
-  (let ((prog (delimited stream #\{ #\} #\; 'parse-expression)))
+  (let ((prog (delimited stream #\{ #\} *expression-separator* 'parse-expression)))
+    (declare (list prog))
     (case (length prog)
       (0 +false+)
       (1 (car prog))
@@ -258,7 +261,7 @@
     (loop :while (not (eof input))
        :collecting (parse-expression stream) :into prog
        :when (not (eof input))
-       :do (skip-punc stream #\;)
+       :do (skip-punc stream *expression-separator*)
        :finally (return (list :type "prog" :prog prog)))))
 
 (defun parse (source)
