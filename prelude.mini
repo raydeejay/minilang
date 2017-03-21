@@ -6,18 +6,33 @@ foreach := lambda(lst, f)
               foreach(cdr(lst), f)
             }.
 
+
 # a tail recursive version of range that is TCO'ed by SBCL
+# the inner lambda is immediately executed to produce the actual function
 range := lambda(a,b)
            (lambda range% (a, b, acc)
              if a <= b
                then range% (a + 1, b, cons(a, acc))
                else reverse(acc)) (a, b, nil).
 
+
 # a generator version of range
+
 irange := lambda (a, b)
   let (n = a - 1)
     lambda()
       if n < b then n := n + 1 .
 
-hello := lambda() print("Hello").
+
+# we don't need to reify characters to use them
+# here an example naive implementation of ROT13 to demonstrate it
+# please feed it only strings made of uppercase characters
+
+import("code-char").
+import("char-code").
+
+rot13-one := let (min-char = 65, max-char = 90) # A-Z
+               lambda(c)
+                 code-char((((char-code(c) - min-char) + 13) % 26) + min-char).
+rot13 := lambda(str) maps(rot13-one, str).
 
