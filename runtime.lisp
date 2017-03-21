@@ -52,7 +52,7 @@
             ((cl:warning #'muffle-warning))
           (loop :initially
              (install-primitives)
-             (eval (make-lisp (parse (prelude))))
+             (eval (make-lisp (opt (parse (prelude)))))
              (format t "Welcome to the minilang REPL~%")
              (format t "~%~A " prompt)
              :with last-result := ""
