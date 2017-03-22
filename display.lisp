@@ -38,7 +38,8 @@
                                                       20 20)
                        :color random-color)
          ;; Redraw the display
-         (sdl:update-display)))))
+         (sdl:update-display)
+         (sleep 0.0001)))))             ;or something...
 
   (defun open-display ()
     (setf display-thread
