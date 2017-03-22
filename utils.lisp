@@ -16,4 +16,15 @@
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defpackage minilang-runtime
-    (:documentation "Holds minilang runtime definitions")))
+    (:documentation "Holds minilang runtime definitions"))
+
+  (defmacro define-primitive (name args &body body)
+    (let ((symb (intern (string-upcase name) :minilang-runtime)))
+      `(defparameter ,symb
+         (defun ,name ,args ,@body))))
+
+  (defmacro define-primitive-alias (alias name)
+    (let ((symb (intern (string-upcase name) :minilang-runtime))
+          (a-symb (intern (string-upcase alias) :minilang-runtime)))
+      `(defparameter ,a-symb ,symb))))
+
