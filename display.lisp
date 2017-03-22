@@ -29,7 +29,7 @@
                                          :g (random 255)
                                          :b (random 255))))
          ;; Clear the display each game loop
-         (sdl:clear-display sdl:*black*)
+         ;; (sdl:clear-display sdl:*black*)
          ;; draw the display
          (sdl:draw-surface *display-surface*)
          ;; Draw the box having a center at the mouse x/y coordinates.
