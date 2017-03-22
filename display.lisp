@@ -33,10 +33,10 @@
          ;; draw the display
          (sdl:draw-surface *display-surface*)
          ;; Draw the box having a center at the mouse x/y coordinates.
-         (sdl:draw-box (sdl:rectangle-from-midpoint-* (sdl:mouse-x)
-                                                      (sdl:mouse-y)
-                                                      20 20)
-                       :color random-color)
+         ;; (sdl:draw-box (sdl:rectangle-from-midpoint-* (sdl:mouse-x)
+         ;;                                              (sdl:mouse-y)
+         ;;                                              20 20)
+         ;;               :color random-color)
          ;; Redraw the display
          (sdl:update-display)
          (sleep 0.0001)))))             ;or something...
