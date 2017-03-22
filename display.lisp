@@ -58,18 +58,31 @@
 (defparameter minilang-runtime::close-display #'close-display)
 (defparameter minilang-runtime::eval-in-display #'eval-in-display)
 
-(defparameter minilang-runtime::line
-  (lambda (x y xt yt)
-    (eval-in-display
-     (lambda (s)
-       (sdl:draw-line-* x y xt yt
-                        :surface s
-                        :color sdl:*white*)))))
+(define-primitive line (x y xt yt)
+  (eval-in-display
+   (lambda (s)
+     (sdl:draw-line-* x y xt yt
+                      :surface s
+                      :color sdl:*white*)))
+  "Draw a line.")
 
-(defparameter minilang-runtime::rectangle
-  (lambda (x y w h)
-    (eval-in-display
-     (lambda (s)
-       (sdl:draw-rectangle-* x y w h
-                             :surface s
-                             :color sdl:*white*)))))
+(define-primitive rectangle (x y w h)
+  (eval-in-display
+   (lambda (s)
+     (sdl:draw-rectangle-* x y w h
+                           :surface s
+                           :color sdl:*white*)))
+  "Draw a rectangle.")
+
+(define-primitive plot (x y)
+  (eval-in-display
+   (lambda (s)
+     (sdl:draw-pixel-* x y
+                       :surface s
+                       :color sdl:*white*)))
+  "Draw a pixel.")
+
+(define-primitive clear ()
+  (eval-in-display
+   (lambda (s)
+     (sdl:fill-surface sdl:*black* :surface s))))
