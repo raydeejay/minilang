@@ -10,7 +10,8 @@
     (sdl:with-init ()
       (sdl:window 640 400 :title-caption "Minilang Display")
       (setf (sdl:frame-rate) 60)
-      (setf *display-surface* (sdl:create-surface 640 400 ))
+      (setf *display-surface* (sdl:create-surface 640 400))
+      (init-turtle)
       (sdl:with-events ()
         (:quit-event () t)
         (:key-down-event (:key key)
@@ -25,6 +26,8 @@
          ()
          ;; Change the color of the box if the left mouse button is depressed
          (when (sdl:mouse-left-p)
+           ;; (fd (random-elt '(5 10 15 20)))
+           ;; (right (random-elt '(-75 -60 -45 -30 -15 0 15 30 45 60 75)))
            (setf random-color (sdl:color :r (random 255)
                                          :g (random 255)
                                          :b (random 255))))
@@ -32,6 +35,13 @@
          ;; (sdl:clear-display sdl:*black*)
          ;; draw the display
          (sdl:draw-surface *display-surface*)
+         ;; draw the turtle
+         (when (visible *turtle*)
+           (sdl:draw-surface-at-* (sdl-gfx:rotate-surface
+                                   (- 270 (heading *turtle*))
+                                   :surface *turtle-icon**)
+                                  (- (x *turtle*) 8)
+                                  (- (y *turtle*) 8)))
          ;; Draw the box having a center at the mouse x/y coordinates.
          ;; (sdl:draw-box (sdl:rectangle-from-midpoint-* (sdl:mouse-x)
          ;;                                              (sdl:mouse-y)
