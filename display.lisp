@@ -13,7 +13,14 @@
       (setf *display-surface* (sdl:create-surface 640 400 ))
       (sdl:with-events ()
         (:quit-event () t)
-        (:key-down-event () (sdl:push-quit-event))
+        (:key-down-event (:key key)
+                         (switch (key :test 'sdl:key=)
+                           (:sdl-key-escape (sdl:push-quit-event))))
+        (:video-expose-event () (sdl:update-display))
+        ;; (:user-event (:code code)
+        ;;              (when (and (= code 1)
+        ;;                         *ticker-enabled*)
+        ;;                (slideshow-advance)))
         (:idle
          ()
          ;; Change the color of the box if the left mouse button is depressed
