@@ -45,3 +45,6 @@ rot13-one := let (min-char = 65, max-char = 90) # A-Z
                  code-char((((char-code(c) - min-char) + 13) % 26) + min-char).
 rot13 := lambda(str) maps(rot13-one, str).
 
+
+# block syntax example
+make-counter := [let (a = 0) [a := a + 1 . a - 1]].
