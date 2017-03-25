@@ -2,19 +2,22 @@
 
 (asdf:defsystem #:minilang
   :serial t
-  :description "Describe minilang here"
-  :author "Your Name <your.name@example.com>"
-  :license "Specify license here"
-  :depends-on (#:alexandria #:parse-float #:arnesi #:lispbuilder-sdl #:lispbuilder-sdl-gfx #:bordeaux-threads)
+  :description "A small programming language"
+  :author "Sergi Reyner <sergi.reyner@gmail.com>"
+  :license "MIT"
+  :depends-on (#:alexandria
+               #:parse-float
+               #:arnesi
+               #:sdl2
+               #:cl-opengl
+               #:bordeaux-threads)
   :components ((:file "package")
                (:file "utils")
                (:file "input-stream")
                (:file "token-stream")
                (:file "parser")
-               (:file "env")
-               ;; (:file "interp")
+               ;; (:file "env")
                (:file "compiler")
-               ;; (:file "cps")
                (:file "optimizer")
                (:file "runtime")
                (:file "display")

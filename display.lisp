@@ -3,96 +3,166 @@
 (in-package #:minilang)
 
 (defparameter *display-surface* nil)
+(defparameter *display-thread* nil)
+(defparameter *display-width* 640)
+(defparameter *display-height* 400)
 
-(let ((random-color sdl:*white*)
-      display-thread)
-  (defun open-display% ()
-    (sdl:with-init ()
-      (sdl:window 640 400 :title-caption "Minilang Display")
-      (setf (sdl:frame-rate) 60)
-      (setf *display-surface* (sdl:create-surface 640 400))
-      (init-turtle)
-      (sdl:with-events ()
-        (:quit-event () t)
-        (:key-down-event (:key key)
-                         (switch (key :test 'sdl:key=)
-                           (:sdl-key-escape (sdl:push-quit-event))))
-        (:video-expose-event () (sdl:update-display))
-        ;; (:user-event (:code code)
-        ;;              (when (and (= code 1)
-        ;;                         *ticker-enabled*)
-        ;;                (slideshow-advance)))
-        (:idle
-         ()
-         ;; Change the color of the box if the left mouse button is depressed
-         (when (sdl:mouse-left-p)
-           ;; (fd (random-elt '(5 10 15 20)))
-           ;; (right (random-elt '(-75 -60 -45 -30 -15 0 15 30 45 60 75)))
-           (setf random-color (sdl:color :r (random 255)
-                                         :g (random 255)
-                                         :b (random 255))))
-         ;; Clear the display each game loop
-         ;; (sdl:clear-display sdl:*black*)
-         ;; draw the display
-         (sdl:draw-surface *display-surface*)
-         ;; draw the turtle
-         (when (visible *turtle*)
-           (sdl:draw-surface-at-* (sdl-gfx:rotate-surface
-                                   (- 270 (heading *turtle*))
-                                   :surface *turtle-icon**)
-                                  (- (x *turtle*) 8)
-                                  (- (y *turtle*) 8)))
-         ;; Draw the box having a center at the mouse x/y coordinates.
-         ;; (sdl:draw-box (sdl:rectangle-from-midpoint-* (sdl:mouse-x)
-         ;;                                              (sdl:mouse-y)
-         ;;                                              20 20)
-         ;;               :color random-color)
-         ;; Redraw the display
-         (sdl:update-display)
-         (sleep 0.0001)))))             ;or something...
+(defparameter *trail* nil
+  "Holds a list of lines to redraw each frame.")
 
-  (defun open-display ()
-    (setf display-thread
-          (make-thread 'open-display%
-                       :name "Minilang Display")))
+;; accounting for the inverted Y axis and operating on the fourth quadrant
+;; not quite sure how... other than by swapping SIN and COS in the usual formula
+(defun rotate-point (p degrees)
+  (let ((f (to-radians degrees)))
+    (cons (+ (* (car p) (cos f)) (* (cdr p) (sin f)))
+          (- (* (cdr p) (cos f)) (* (car p) (sin f))))))
 
-  (defun close-display ()
-    (sdl:push-quit-event))
+(defun to-origin (p anchor)
+  (cons (- (car p) (car anchor))
+        (- (cdr p) (cdr anchor))))
 
-  (defun eval-in-display (fn)
-    (when display-thread
-      (interrupt-thread display-thread fn *display-surface*))))
+(defun from-origin (p anchor)
+  (cons (+ (car p) (car anchor))
+        (+ (cdr p) (cdr anchor))))
 
+(defun gl-setup (&optional (width *display-width*) (height *display-height*))
+  "Set up 1:1 pixel ortho matrix"
+  (gl:viewport 0 0 width height)
+  (gl:matrix-mode :projection)
+  (gl:load-identity)
+  (gl:ortho 0 width height 0 -1 1)
+  (gl:matrix-mode :modelview))
 
-(defparameter minilang-runtime::open-display #'open-display)
-(defparameter minilang-runtime::close-display #'close-display)
-(defparameter minilang-runtime::eval-in-display #'eval-in-display)
+(defun draw-turtle ()
+  (when (visible *turtle*)
+    (let ((anchor (cons (x *turtle*)
+                        (y *turtle*))))
+      (labels ((transform (p)
+                 (from-origin
+                  (rotate-point
+                   (to-origin p anchor)
+                   (heading *turtle*))
+                  anchor)))
+        (let ((p1 (transform
+                   (cons (car anchor)
+                         (- (cdr anchor) 4))))
+              (p2 (transform
+                   (cons (+ 13 (car anchor))
+                         (cdr anchor))))
+              (p3 (transform
+                   (cons (car anchor)
+                         (+ 4 (cdr anchor))))))
+          (gl:with-primitive :triangles
+            (apply 'gl:color (color *turtle*))
+            (gl:vertex (car p1) (cdr p1))
+            (gl:vertex (car p2) (cdr p2))
+            (gl:vertex (car p3) (cdr p3)))
+          (gl:flush))))))
 
-(define-primitive line (x y xt yt)
-  (eval-in-display
-   (lambda (s)
-     (sdl:draw-line-* x y xt yt
-                      :surface s
-                      :color sdl:*white*)))
-  "Draw a line.")
+(defun idle-func (win)
+  (gl:load-identity)
+  (gl-setup *display-width* *display-height*)
 
-(define-primitive rectangle (x y w h)
-  (eval-in-display
-   (lambda (s)
-     (sdl:draw-rectangle-* x y w h
-                           :surface s
-                           :color sdl:*white*)))
-  "Draw a rectangle.")
+  ;; clear the display
+  (gl:clear-color 0.0 0.0 1.0 1.0)
+  (gl:clear :color-buffer :depth-buffer)
 
-(define-primitive plot (x y)
-  (eval-in-display
-   (lambda (s)
-     (sdl:draw-pixel-* x y
-                       :surface s
-                       :color sdl:*white*)))
-  "Draw a pixel.")
+  ;; redraw lines
+  (gl:line-width 1)
+  (gl:with-primitives :lines
+    (mapc (lambda (coords)
+            (let ((color (fifth coords)))
+              (gl:color (first color) (second color) (third color)))
+            (gl:vertex (first coords) (second coords))
+            (gl:vertex (third coords) (fourth coords)))
+          *trail*))
+  (gl:flush)
+
+  ;; draw turtle
+  (draw-turtle)
+
+  ;; stuff
+  (sdl2:gl-swap-window win))
+
+(defun open-display% ()
+  (sdl2:with-init (:everything)
+    (sdl2:with-window (win :title "Minilang Display"
+                           :w *display-width* :h *display-height*
+                           :flags '(:shown :opengl))
+      (sdl2:with-renderer (renderer win)
+        (sdl2:with-gl-context (gl-context win)
+          (init-turtle)
+          (setf *trail* nil)
+
+          (sdl2:gl-make-current win gl-context)
+          (gl-setup *display-width* *display-height*)
+          (gl:clear-color 0.0 0.0 1.0 1.0)
+          (gl:clear :color-buffer :depth-buffer)
+
+          (sdl2:with-event-loop (:method :poll)
+            (:quit () t)
+
+            ;; (:keydown
+            ;;  (:keysym keysym)
+            ;;  (let ((scancode (sdl2:scancode-value keysym))
+            ;;        (sym (sdl2:sym-value keysym))
+            ;;        (mod-value (sdl2:mod-value keysym)))
+            ;;    (cond
+            ;;      ((sdl2:scancode= scancode :scancode-w)
+            ;;       (format t "~a~%" "WALK"))
+            ;;      ((sdl2:scancode= scancode :scancode-s)
+            ;;       (sdl2:show-cursor))
+            ;;      ((sdl2:scancode= scancode :scancode-h)
+            ;;       (sdl2:hide-cursor)))
+            ;;    (format t "Key sym: ~a, code: ~a, mod: ~a~%"
+            ;;            sym
+            ;;            scancode
+            ;;            mod-value)))
+
+            (:keyup
+             (:keysym keysym)
+             (when (sdl2:scancode= (sdl2:scancode-value keysym)
+                                   :scancode-escape)
+               (sdl2:push-event :quit)))
+
+            (:idle
+             ()
+             (idle-func win)
+             (sleep 0.01))))))))        ; naively 100fps?
+
+(define-primitive open-display ()
+  (setf *display-thread*
+        (make-thread 'open-display%
+                     :name "Minilang Display")))
+
+(define-primitive close-display ()
+  (sdl2:push-quit-event))
+
+;; (define-primitive line (x y xt yt)
+;;   "Draw a line."
+;;   (eval-in-display
+;;    (lambda (s)
+;;      (sdl2:draw-line-* x y xt yt
+;;                       :surface s
+;;                       :color sdl2:*white*))))
+
+;; (define-primitive rectangle (x y w h)
+;;   "Draw a rectangle."
+;;   (eval-in-display
+;;    (lambda (s)
+;;      (sdl2:draw-rectangle-* x y w h
+;;                            :surface s
+;;                            :color sdl2:*white*))))
+
+;; (define-primitive plot (x y)
+;;   "Draw a pixel."
+;;   (eval-in-display
+;;    (lambda (s)
+;;      (sdl2:draw-pixel-* x y
+;;                        :surface s
+;;                        :color sdl2:*red*))))
 
 (define-primitive clear ()
-  (eval-in-display
-   (lambda (s)
-     (sdl:fill-surface sdl:*black* :surface s))))
+  (sdl2:in-main-thread ()
+    (gl:clear :color-buffer)
+    (setf *trail* nil)))

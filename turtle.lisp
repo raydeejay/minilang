@@ -2,76 +2,50 @@
 
 (in-package #:minilang)
 
-;; backward
-
-;; move +/-
-;; turn +/-
-
-;; point-at absolutes
-
 (defclass turtle ()
-  ((x       :accessor x       :initarg :x :initform 300)
-   (y       :accessor y       :initarg :y :initform 200)
-   (heading :accessor heading :initarg :heading :initform 270)
-   (color   :accessor color   :initarg :color :initform sdl:*white*)
-   (visible :accessor visible :initarg :visible :initform T)
-   (pen :accessor pen :initarg :pen :initform T)))
+  ((x         :accessor x         :initarg :x         :initform 320)
+   (y         :accessor y         :initarg :y         :initform 200)
+   (heading   :accessor heading   :initarg :heading   :initform 90)
+   (color     :accessor color     :initarg :color     :initform (list 1 1 1))
+   (pen-width :accessor pen-width :initarg :pen-width :initform 1)
+   (visible   :accessor visible   :initarg :visible   :initform T)
+   (pen       :accessor pen       :initarg :pen       :initform T)))
 
 (defun make-turtle ()
     (make-instance 'turtle))
 
 (defparameter *turtle* nil)
-(defparameter *turtle-icon* nil)
-(defparameter *turtle-surface* nil)
 
 (defun init-turtle ()
-  (setf *turtle* (make-turtle)
-        *turtle-icon* (sdl:create-surface 16 16))
-  (sdl:draw-filled-trigon (sdl:point :x 3 :y 15)
-                          (sdl:point :x 8 :y 1)
-                          (sdl:point :x 12 :y 15)
-                          :color (color *turtle*)
-                          :surface *turtle-icon*))
-
-;; this probably shouldn't be exposed
-(define-primitive draw ()
-  (eval-in-display
-   (lambda (s)
-     (sdl:draw-surface-at-*
-      (sdl-gfx:rotate-surface (- 270 (heading *turtle*))
-                              :surface *turtle-icon*)
-      (- (x *turtle*) 8)
-      (- (y *turtle*) 8)
-      :surface s))))
-
-;; (defparameter minilang-runtime::fd
-;;   (defun fd (n)
-;;     (let ((dx (* n (cos (sdl:to-radian (heading *turtle*)))))
-;;           (dy (* n (sin (sdl:to-radian (heading *turtle*))))))
-;;       (incf (x *turtle*) (truncate dx))
-;;       (incf (y *turtle*) (truncate dy)))))
+  (setf *turtle* (make-turtle)))
 
 (define-primitive forward (n)
-  (let ((dx (* n (cos (sdl:to-radian (heading *turtle*)))))
-        (dy (* n (sin (sdl:to-radian (heading *turtle*))))))
-    (let ((old-x (x *turtle*))
-          (old-y (y *turtle*)))
-      (incf (x *turtle*) (truncate dx))
-      (incf (y *turtle*) (truncate dy))
-      (when (pen *turtle*)
-        (line old-x old-y (x *turtle*) (y *turtle*))))))
+  (let ((dx (* n (cos (to-radians (heading *turtle*)))))
+        (dy (* n (sin (to-radians (heading *turtle*)))))
+        (old-x (x *turtle*))
+        (old-y (y *turtle*)))
+    ;; decrement because the Y axis is backwards,
+    ;; this should be dealt with using a transform function...
+    (incf (x *turtle*) dx)
+    (decf (y *turtle*) dy)
+
+    ;; add current line to trail
+    (when (and (pen *turtle*)
+               (or (/= old-x (x *turtle*))
+                   (/= old-y (y *turtle*))))
+      (push (list (x *turtle*) (y *turtle*)
+                  old-x old-y
+                  (color *turtle*))
+            *trail*))))
 
 (define-primitive back (n)
-  (let ((dx (* n (cos (sdl:to-radian (heading *turtle*)))))
-        (dy (* n (sin (sdl:to-radian (heading *turtle*))))))
-    (decf (x *turtle*) (truncate dx))
-    (decf (y *turtle*) (truncate dy))))
+  (forward (- n)))
 
 (define-primitive left (n)
-  (decf (heading *turtle*) n))
+  (incf (heading *turtle*) n))
 
 (define-primitive right (n)
-  (incf (heading *turtle*) n))
+  (decf (heading *turtle*) n))
 
 (define-primitive-alias fd forward)
 (define-primitive-alias bk back)
@@ -81,9 +55,25 @@
 (define-primitive point-to (n)
   (setf (heading *turtle*) n))
 
+;; Y axis is inverted
+(define-primitive point-at (x y)
+  (let ((dx (- x (x *turtle*)))
+        (dy (- (y *turtle*) y)))
+    (setf (heading *turtle*)
+          (/ (* (atan dy dx) 180) pi))))
+
+(define-primitive home ()
+  (point-at 320 200)
+  ;; fake it
+  ;; (line (x *turtle*) (y *turtle*) 320 200)
+  (goto 320 200))
+
 (define-primitive goto (x y)
-  (setf (x *turtle*) (truncate x)
-        (y *turtle*) (truncate y)))
+  (when (pen *turtle*)
+    (push (list (x *turtle*) (y *turtle*) x y (color *turtle*))
+          *trail*))
+  (setf (x *turtle*) x
+        (y *turtle*) y))
 
 (define-primitive coords ()
   (cons (x *turtle*) (y *turtle*)))
@@ -100,7 +90,23 @@
 (define-primitive pen-down ()
   (setf (pen *turtle*) T))
 
+(define-primitive ink (r g b)
+  (setf (color *turtle*) (list r g b)))
+
+(define-primitive pen-size (n)
+  (setf (pen-width *turtle*) n))
+
 (define-primitive-alias ht hide)
 (define-primitive-alias st show)
 (define-primitive-alias pu pen-up)
 (define-primitive-alias pd pen-down)
+(define-primitive-alias ps pen-size)
+
+(define-primitive help ()
+  (with-package-iterator
+      (generator-fn (find-package :minilang-runtime) :internal)
+    (loop (multiple-value-bind (more? symbol accessibility pkg)
+              (generator-fn)
+            (declare (ignore accessibility pkg))
+            (unless more? (return))
+            (format t "~A~%" (string symbol))))))
