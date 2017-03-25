@@ -39,9 +39,11 @@
                       (mapcar 'make-var (<- :vars exp))
                       (lisp (<- :body exp)))))
     (if (<- :name exp)
-        (list 'setf (make-var (<- :name exp)) result)
+        `(let (,(make-var (<- :name exp)))
+           (setf ,(make-var (<- :name exp)) ,result))
         result)))
 
+;; is it really necessary to do this...?
 (defun lisp-let (exp)
   (if (zerop (length (<- :vars exp)))
       (lisp (<- :body exp))
