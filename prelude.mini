@@ -1,5 +1,6 @@
-# minilang standard library
+# minilang standard library (and experiments)
 
+# FOREACH takes a function of one argument
 foreach := lambda(lst, f)
             if lst != nil {
               f(car(lst)).
