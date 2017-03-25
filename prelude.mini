@@ -40,9 +40,17 @@ irange := lambda (a, b)
 import("code-char").
 import("char-code").
 
-rot13-one := let (min-char = 65, max-char = 90) # A-Z
-               lambda(c)
-                 code-char((((char-code(c) - min-char) + 13) % 26) + min-char).
+rot13-one% := lambda(c, base-char)
+               code-char((((char-code(c) - base-char) + 13) % 26) + base-char).
+
+rot13-one := lambda(c)
+               let (n = char-code(c))
+                 if n >= 97 && n <= 122
+                   then rot13-one%(c, 97)
+                   else if n >= 65 && n <= 90
+                     then rot13-one%(c, 65)
+                   else c.
+
 rot13 := lambda(str) maps(rot13-one, str).
 
 
