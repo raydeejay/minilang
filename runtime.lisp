@@ -50,7 +50,8 @@ irange := lambda (a, b)
   ;; node is generated for them
   (mapc minilang-runtime::import-op '("+" "-" "*" "/" "<" ">" "<=" ">="))
   (mapc minilang-runtime::import '("sqrt" "expt" "max" "min"
-                                   "cons" "car" "cdr" "list"))
+                                   "cons" "car" "cdr" "list"
+                                   "sleep"))
   ;; these operators require some massaging
   (defparameter minilang-runtime::% (lambda (a b) (mod a b)))
   (defparameter minilang-runtime::== (lambda (a b) (equal a b)))
