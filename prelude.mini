@@ -6,14 +6,22 @@ foreach := lambda(lst, f)
               foreach(cdr(lst), f)
             }.
 
+# repeat takes a function of no parameters
+repeat := [|times fn| foreach(range(1, times), [|_| fn()])]
 
 # a tail recursive version of range that is TCO'ed by SBCL
 # the inner lambda is immediately executed to produce the actual function
-range := lambda(a,b)
+range := lambda(a, b)
            (lambda range% (a, b, acc)
              if a <= b
-               then range% (a + 1, b, cons(a, acc))
+               then range%((a + 1) , b , cons(a, acc))
                else reverse(acc)) (a, b, nil).
+
+range% := lambda(a, b, step)
+            (lambda range% (a, b, step, acc)
+              if a <= b
+                then range%(a + step, b, step, cons(a, acc))
+                else reverse(acc)) (a, b, step, nil).
 
 
 # a generator version of range
