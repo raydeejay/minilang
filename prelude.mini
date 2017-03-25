@@ -8,7 +8,7 @@ foreach := lambda(lst, f)
             }.
 
 # repeat takes a function of no parameters
-repeat := [|times fn| foreach(range(1, times), [|_| fn()])]
+repeat := [|times, fn| foreach(range(1, times), [|_| fn()])].
 
 # a tail recursive version of range that is TCO'ed by SBCL
 # the inner lambda is immediately executed to produce the actual function
