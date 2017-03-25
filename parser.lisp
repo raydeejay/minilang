@@ -8,7 +8,7 @@
 (defvar +false+ (list :type "bool" :value 'minilang-runtime::nil))
 
 (defparameter *expression-separator* #\.)
-
+(defparameter *element-separator* #\,)
 ;; parser
 (defparameter *precedences*
   (list "=" 1 ;; ??
@@ -129,15 +129,25 @@
   (with-slots (input)
       stream
     (loop :with first := T
-       :initially (skip-punc stream start)
+       :initially (when start
+                    (if (is-punc start)
+                        (skip-punc stream start)
+                        (skip-op stream start)))
        :while (not (eof input))
-       :when (at-punc stream stop) :do (loop-finish)
+       :when (if (is-punc stop)
+                 (at-punc stream stop)
+                 (at-op stream stop)) :do (loop-finish)
        :if first :do (setf first nil)
        :else :do (skip-punc stream delimiter)
-       :when (at-punc stream stop) :do (loop-finish)
+       :when (if (is-punc stop)
+                 (at-punc stream stop)
+                 (at-op stream stop)) :do (loop-finish)
        :collect (funcall parser-fn stream) :into exp
-       :finally (progn (skip-punc stream stop)
-                       (return exp)))))
+       :finally (progn
+                  (if (is-punc stop)
+                      (skip-punc stream stop)
+                      (skip-op stream stop))
+                  (return exp)))))
 
 ;; specific parsing methods
 (defmethod parse-call ((stream parser) func)
@@ -166,6 +176,11 @@
                 (next (slot-value stream 'input))
                 (list :else (parse-expression stream)))))))
 
+(defmethod delimited-varnames ((stream parser) start stop)
+  (delimited stream start stop
+             *element-separator*
+             'parse-varname))
+
 (defmethod parse-lambda ((stream parser))
   (with-slots (input)
       stream
@@ -173,7 +188,7 @@
           :name (if (equal (<- :type (peek input)) "var")
                     (<- :value (next input))
                     nil)
-          :vars (delimited stream #\( #\) #\, 'parse-varname)
+          :vars (delimited-varnames stream #\( #\))
           :body (parse-expression stream))))
 
 (defmethod parse-bool ((stream parser))
@@ -203,6 +218,8 @@
                              (return-from inner exp)))
                           ((at-punc stream #\{)
                            (return-from inner (parse-prog stream)))
+                          ((at-punc stream #\[)
+                           (return-from inner (parse-block stream)))
                           ((at-kw stream "let")
                            (return-from inner (parse-let stream)))
                           ((at-kw stream "if")
@@ -229,11 +246,39 @@
       (1 (car prog))
       (otherwise (list :type "prog" :prog prog)))))
 
+(defmethod parse-block ((stream parser))
+  (with-slots (input)
+      stream
+    (next input)                        ; skip #\[
+    (let (has-params)
+      (list :type "lambda"
+            :name (when (at-op stream ":")
+                    (skip-op stream ":")
+                    (<- :value (next input)))
+            :vars (when (at-op stream "|")
+                    (setf has-params T)
+                    ;; (delimited stream #\| #\|
+                    ;;            *element-separator*
+                    ;;            'parse-varname)
+                    (delimited-varnames stream "|" "|"))
+            :body (list :type "prog"
+                        :prog (delimited stream
+                                         nil
+                                         #\]
+                                         *expression-separator*
+                                         'parse-expression))))))
+
 (defmethod parse-expression ((stream parser))
   (maybe-call stream (lambda ()
                        (maybe-binary stream
                                      (parse-atom stream)
                                      0))))
+
+(defmethod delimited-vardefs ((stream parser) start stop)
+  (delimited stream start stop
+             *element-separator*
+             'parse-vardef))
+
 
 (defmethod parse-let ((stream parser))
   (skip-kw stream "let")
@@ -281,3 +326,23 @@ then tells the parser to parse."
                   :input (make-instance 'token-stream
                                         :input (make-instance 'input-stream
                                                               :input source)))))
+;; some ideas to make the language "easier"
+;; and to be implemented:
+
+;; ink
+;; erase(?)
+;; sprites
+;; file I/O
+;; help commands to examine the environment and such
+;; DONE - replace lambda/λ with block syntax
+;; properly parse periods after numbers
+;; provide a restart to remain in the repl
+;; catch most errors
+;; repeat
+;; while/until/loop
+;; DONE - remove commas?
+;; remove parens?
+;; call syntax?
+;; DONE - fix named lambdas creating global symbols
+
+
