@@ -14,6 +14,12 @@
   "Takes any number of arguments and simply ignores them, doing absolutely nothing."
   (declare (ignore args)))
 
+(defun to-radians (degrees)
+  (/ (* degrees pi) 180.0))
+
+(defun to-degrees (radians)
+  (/ (* radians 180.0) pi))
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defpackage minilang-runtime
     (:documentation "Holds minilang runtime definitions"))
