@@ -58,7 +58,8 @@ irange := lambda (a, b)
   (defparameter minilang-runtime::!= (lambda (a b) (not (equal a b))))
   ;; functions
   (defparameter minilang-runtime::gensym 'gensym%)
-  (defparameter minilang-runtime::reverse (lambda (v) (reverse v)))
+  (define-primitive symb (name)
+    (intern (string-upcase name)))
   (defparameter minilang-runtime::print (lambda (v) (princ v)))
   (defparameter minilang-runtime::println (lambda (x) (format t "~A~%" x) x))
   (defparameter minilang-runtime::maps
