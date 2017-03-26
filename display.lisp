@@ -163,4 +163,5 @@
 (define-primitive clear ()
   (sdl2:in-main-thread ()
     (gl:clear :color-buffer)
+    (draw-turtle)
     (setf *trail* nil)))
