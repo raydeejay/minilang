@@ -51,7 +51,7 @@ irange := lambda (a, b)
   (mapc minilang-runtime::import-op '("+" "-" "*" "/" "<" ">" "<=" ">="))
   (mapc minilang-runtime::import '("sqrt" "expt" "max" "min"
                                    "cons" "car" "cdr" "list"
-                                   "sleep"))
+                                   "sleep" "reverse"))
   ;; these operators require some massaging
   (defparameter minilang-runtime::% (lambda (a b) (mod a b)))
   (defparameter minilang-runtime::== (lambda (a b) (equal a b)))
