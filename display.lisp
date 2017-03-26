@@ -2,13 +2,12 @@
 
 (in-package #:minilang)
 
-(defparameter *display-surface* nil)
-(defparameter *display-thread* nil)
+(defparameter *display-window* nil)
 (defparameter *display-width* 640)
 (defparameter *display-height* 400)
 
-(defparameter *trail* nil
-  "Holds a list of lines to redraw each frame.")
+(defparameter *paper* (list 0 0 0 1)
+  "RGBA color of the background of the drawing field.")
 
 ;; accounting for the inverted Y axis and operating on the fourth quadrant
 ;; not quite sure how... other than by swapping SIN and COS in the usual formula
@@ -33,49 +32,23 @@
   (gl:ortho 0 width height 0 -1 1)
   (gl:matrix-mode :modelview))
 
-(defun draw-turtle ()
-  (when (visible *turtle*)
-    (let ((anchor (cons (x *turtle*)
-                        (y *turtle*))))
-      (labels ((transform (p)
-                 (from-origin
-                  (rotate-point
-                   (to-origin p anchor)
-                   (heading *turtle*))
-                  anchor)))
-        (let ((p1 (transform
-                   (cons (car anchor)
-                         (- (cdr anchor) 4))))
-              (p2 (transform
-                   (cons (+ 13 (car anchor))
-                         (cdr anchor))))
-              (p3 (transform
-                   (cons (car anchor)
-                         (+ 4 (cdr anchor))))))
-          (gl:with-primitive :triangles
-            (apply 'gl:color (color *turtle*))
-            (gl:vertex (car p1) (cdr p1))
-            (gl:vertex (car p2) (cdr p2))
-            (gl:vertex (car p3) (cdr p3)))
-          (gl:flush))))))
-
 (defun idle-func (win)
   (gl:load-identity)
   (gl-setup *display-width* *display-height*)
 
   ;; clear the display
-  (gl:clear-color 0.0 0.0 1.0 1.0)
+  (gl:clear-color (first *paper*) (second *paper*) (third *paper*) (fourth *paper*))
   (gl:clear :color-buffer :depth-buffer)
 
   ;; redraw lines
-  (gl:line-width 1)
-  (gl:with-primitives :lines
-    (mapc (lambda (coords)
-            (let ((color (fifth coords)))
-              (gl:color (first color) (second color) (third color)))
+  (mapc (lambda (coords)
+          (let ((color (fifth coords)))
+            (gl:color (first color) (second color) (third color)))
+          (gl:line-width (sixth coords))
+          (gl:with-primitives :lines
             (gl:vertex (first coords) (second coords))
-            (gl:vertex (third coords) (fourth coords)))
-          *trail*))
+            (gl:vertex (third coords) (fourth coords))))
+        *trail*)
   (gl:flush)
 
   ;; draw turtle
@@ -89,6 +62,7 @@
     (sdl2:with-window (win :title "Minilang Display"
                            :w *display-width* :h *display-height*
                            :flags '(:shown :opengl))
+      (setf *display-window* win)
       (sdl2:with-renderer (renderer win)
         (sdl2:with-gl-context (gl-context win)
           (init-turtle)
@@ -96,7 +70,7 @@
 
           (sdl2:gl-make-current win gl-context)
           (gl-setup *display-width* *display-height*)
-          (gl:clear-color 0.0 0.0 1.0 1.0)
+          (gl:clear-color (first *paper*) (second *paper*) (third *paper*) (fourth *paper*))
           (gl:clear :color-buffer :depth-buffer)
 
           (sdl2:with-event-loop (:method :poll)
@@ -139,29 +113,73 @@
   (sdl2:push-quit-event))
 
 ;; lines include the end point, too (yes?)
-;; so we compensate here, or maybe we should compensate somewhere else...
+;; so do compensate here, or maybe we should compensate somewhere else...?
 (define-primitive line (x y xt yt)
   "Draw a line."
-  (push (list x y xt yt (color *turtle*))
+  (push (list x y xt yt (color *turtle*) (pen-width *turtle*))
         *trail*))
 
 ;; we need to compensate for rectangles too?
 (define-primitive rectangle (x y w h)
-  "Draw a line."
+  "Draw a rectangle."
   (mapcar (lambda (p) (push p *trail*))
-          `(,(list x         y        (+ x w)  y        (color *turtle*))
-             ,(list x        y        x        (+ y h)  (color *turtle*))
-             ,(list (+ x w)  (+ y h)  (+ x w)  y        (color *turtle*))
-             ,(list (+ x w)  (+ y h)  x        (+ y h)  (color *turtle*)))))
+          `(,(list  x        y        (+ x w)  y        (color *turtle*) (pen-width *turtle*))
+             ,(list x        y        x        (+ y h)  (color *turtle*) (pen-width *turtle*))
+             ,(list (+ x w)  (+ y h)  (+ x w)  y        (color *turtle*) (pen-width *turtle*))
+             ,(list (+ x w)  (+ y h)  x        (+ y h)  (color *turtle*) (pen-width *turtle*)))))
 
 ;; Compensating the missing pixel/point/whatever
 (define-primitive plot (x y)
   "Draw a single point."
-  (push (list (1- x) (1- y) x y (color *turtle*))
+  (push (list (1- x) (1- y) x y (color *turtle*) (pen-width *turtle*))
         *trail*))
 
 (define-primitive clear ()
   (sdl2:in-main-thread ()
+    (gl:clear-color (first *paper*) (second *paper*) (third *paper*) (fourth *paper*))
     (gl:clear :color-buffer)
     (draw-turtle)
     (setf *trail* nil)))
+
+(define-primitive paper (r g b)
+  (setf *paper* (list r g b 1)))
+
+;; quick and dirty
+(define-primitive save-display (filename)
+  ;; doesn't work...
+  (sdl2:raise-window *display-window*)
+  (uiop/run-program:run-program (format nil
+                                        "gnome-screenshot -w -B -f \"~A\""
+                                        filename)))
+
+(define-primitive save-svg (filename)
+  (let ((scene (svg:make-svg-toplevel 'svg:svg-1.2-toplevel
+                                      :width *display-width*
+                                      :height *display-height*)))
+    (multiple-value-bind (r g b a)
+        (values-list *paper*)
+      (svg:draw scene (:rect :x 0 :y 0
+                             :width *display-width*
+                             :height *display-height*
+                             :fill (format nil "rgb(~D,~D,~D,~D)"
+                                           (* 255 r)
+                                           (* 255 g)
+                                           (* 255 b)
+                                           a))))
+    (mapc (lambda (line)
+            (let ((color (fifth line)))
+              (multiple-value-bind (r g b)
+                  (values-list color)
+                ;; (title "title")
+                ;; (desc "desc")
+                (svg:draw scene (:line :x1 (first line) :y1 (second line)
+                                       :x2 (third line) :y2 (fourth line)
+                                       :stroke (format nil "rgba(~D,~D,~D,1)"
+                                                       (* 255 r)
+                                                       (* 255 g)
+                                                       (* 255 b))
+                                       :stroke-width (sixth line)
+                                       :opacity 1)))))
+          *trail*)
+    (with-open-file (s filename :direction :output :if-exists :supersede)
+      (svg:stream-out s scene))))

@@ -326,23 +326,5 @@ then tells the parser to parse."
                   :input (make-instance 'token-stream
                                         :input (make-instance 'input-stream
                                                               :input source)))))
-;; some ideas to make the language "easier"
-;; and to be implemented:
-
-;; ink
-;; erase(?)
-;; sprites
-;; file I/O
-;; help commands to examine the environment and such
-;; DONE - replace lambda/λ with block syntax
-;; properly parse periods after numbers
-;; provide a restart to remain in the repl
-;; catch most errors
-;; repeat
-;; while/until/loop
-;; DONE - remove commas?
-;; remove parens?
-;; call syntax?
-;; DONE - fix named lambdas creating global symbols
 
 

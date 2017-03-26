@@ -10,7 +10,8 @@
                #:arnesi
                #:sdl2
                #:cl-opengl
-               #:bordeaux-threads)
+               #:bordeaux-threads
+               #:cl-svg)
   :components ((:file "package")
                (:file "utils")
                (:file "input-stream")

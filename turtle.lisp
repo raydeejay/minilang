@@ -15,10 +15,40 @@
     (make-instance 'turtle))
 
 (defparameter *turtle* nil)
+(defparameter *trail* nil
+  "Holds a list of lines to redraw each frame.")
 
 (defun init-turtle ()
   (setf *turtle* (make-turtle)))
 
+(defun draw-turtle ()
+  (when (visible *turtle*)
+    (let ((anchor (cons (x *turtle*)
+                        (y *turtle*))))
+      (labels ((transform (p)
+                 (from-origin
+                  (rotate-point
+                   (to-origin p anchor)
+                   (heading *turtle*))
+                  anchor)))
+        (let ((p1 (transform
+                   (cons (car anchor)
+                         (- (cdr anchor) 4))))
+              (p2 (transform
+                   (cons (+ 13 (car anchor))
+                         (cdr anchor))))
+              (p3 (transform
+                   (cons (car anchor)
+                         (+ 4 (cdr anchor))))))
+          (gl:with-primitive :triangles
+            (apply 'gl:color (color *turtle*))
+            (gl:vertex (car p1) (cdr p1))
+            (gl:vertex (car p2) (cdr p2))
+            (gl:vertex (car p3) (cdr p3)))
+          (gl:flush))))))
+
+
+;; turtle primitives
 (define-primitive forward (n)
   (let ((dx (* n (cos (to-radians (heading *turtle*)))))
         (dy (* n (sin (to-radians (heading *turtle*)))))
@@ -35,7 +65,8 @@
                    (/= old-y (y *turtle*))))
       (push (list (x *turtle*) (y *turtle*)
                   old-x old-y
-                  (color *turtle*))
+                  (color *turtle*)
+                  (pen-width *turtle*))
             *trail*))))
 
 (define-primitive back (n)
@@ -70,7 +101,7 @@
 
 (define-primitive goto (x y)
   (when (pen *turtle*)
-    (push (list (x *turtle*) (y *turtle*) x y (color *turtle*))
+    (push (list (x *turtle*) (y *turtle*) x y (color *turtle*) (pen-width *turtle*))
           *trail*))
   (setf (x *turtle*) x
         (y *turtle*) y))
