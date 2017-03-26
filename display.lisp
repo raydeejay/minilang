@@ -138,29 +138,27 @@
 (define-primitive close-display ()
   (sdl2:push-quit-event))
 
-;; (define-primitive line (x y xt yt)
-;;   "Draw a line."
-;;   (eval-in-display
-;;    (lambda (s)
-;;      (sdl2:draw-line-* x y xt yt
-;;                       :surface s
-;;                       :color sdl2:*white*))))
+;; lines include the end point, too (yes?)
+;; so we compensate here, or maybe we should compensate somewhere else...
+(define-primitive line (x y xt yt)
+  "Draw a line."
+  (push (list x y xt yt (color *turtle*))
+        *trail*))
 
-;; (define-primitive rectangle (x y w h)
-;;   "Draw a rectangle."
-;;   (eval-in-display
-;;    (lambda (s)
-;;      (sdl2:draw-rectangle-* x y w h
-;;                            :surface s
-;;                            :color sdl2:*white*))))
+;; we need to compensate for rectangles too?
+(define-primitive rectangle (x y w h)
+  "Draw a line."
+  (mapcar (lambda (p) (push p *trail*))
+          `(,(list x         y        (+ x w)  y        (color *turtle*))
+             ,(list x        y        x        (+ y h)  (color *turtle*))
+             ,(list (+ x w)  (+ y h)  (+ x w)  y        (color *turtle*))
+             ,(list (+ x w)  (+ y h)  x        (+ y h)  (color *turtle*)))))
 
-;; (define-primitive plot (x y)
-;;   "Draw a pixel."
-;;   (eval-in-display
-;;    (lambda (s)
-;;      (sdl2:draw-pixel-* x y
-;;                        :surface s
-;;                        :color sdl2:*red*))))
+;; Compensating the missing pixel/point/whatever
+(define-primitive plot (x y)
+  "Draw a single point."
+  (push (list (1- x) (1- y) x y (color *turtle*))
+        *trail*))
 
 (define-primitive clear ()
   (sdl2:in-main-thread ()
