@@ -101,12 +101,3 @@
 (define-primitive-alias pu pen-up)
 (define-primitive-alias pd pen-down)
 (define-primitive-alias ps pen-size)
-
-(define-primitive help ()
-  (with-package-iterator
-      (generator-fn (find-package :minilang-runtime) :internal)
-    (loop (multiple-value-bind (more? symbol accessibility pkg)
-              (generator-fn)
-            (declare (ignore accessibility pkg))
-            (unless more? (return))
-            (format t "~A~%" (string symbol))))))

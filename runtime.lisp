@@ -149,3 +149,24 @@ irange := lambda (a, b)
                                :end 1))
                        (setf source "")
                        nil))))))))))
+
+
+(define-primitive help ()
+  (let ((symbols (let ((package (find-package :minilang-runtime)))
+                   (loop :for s :being :the :symbols :of package
+                      :for (n visibility)
+                      := (multiple-value-list (find-symbol (string s)
+                                                           package))
+                      :when (equal visibility :internal)
+                      :collect s))))
+    (format t "Symbols:~%~%")
+    (format t "~{~19A ~}" (sort (loop :for s :in symbols
+                                   :when (boundp s)
+                                   :collect (format nil "~A" s))
+                                'string-lessp))
+    ;; (format t "~%~%Unbound symbols:~%~%")
+    ;; (format t "~{~19A ~}" (sort (loop :for s :in symbols
+    ;;                                :when (not (boundp s))
+    ;;                                :collect (format nil "~A" s))
+    ;;                             'string-lessp))
+    ))
