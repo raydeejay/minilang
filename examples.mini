@@ -20,9 +20,7 @@ gas-squares := [|n|
   ink(0.8, 0, 1).
   foreach(range(2, n + 1), [|m|
                             ps(m).
-                            pd().
                             repeat(4, [fd(130). rt(90)]).
-                            pu().
                             rt(360 / n)])].
 
 # Lévy C curve [2]
