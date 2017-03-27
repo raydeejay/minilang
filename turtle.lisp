@@ -95,8 +95,6 @@
 
 (define-primitive home ()
   (point-at 320 200)
-  ;; fake it
-  ;; (line (x *turtle*) (y *turtle*) 320 200)
   (goto 320 200))
 
 (define-primitive goto (x y)
@@ -109,7 +107,6 @@
 
 (define-primitive coords ()
   (cons (x *turtle*) (y *turtle*)))
-(doc! "show" "Tell the turtle to display itself on screen.")
 
 (define-primitive hide ()
   (setf (visible *turtle*) NIL))
@@ -117,7 +114,7 @@
 
 (define-primitive show ()
   (setf (visible *turtle*) T))
-(doc! "pen-up" "Tell the turtle to place the pen down. Further movement will produce a drawing in the turtle's current ink color.")
+(doc! "show" "Tell the turtle to display itself on screen.")
 
 (define-primitive pen-up ()
   (setf (pen *turtle*) NIL))
@@ -125,6 +122,7 @@
 
 (define-primitive pen-down ()
   (setf (pen *turtle*) T))
+(doc! "pen-down" "Tell the turtle to place the pen down. Further movement will produce a drawing in the turtle's current ink color.")
 
 (define-primitive ink (r g b)
   (setf (color *turtle*) (list r g b)))

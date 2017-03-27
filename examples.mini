@@ -24,14 +24,6 @@ gas-squares := [|n|
                             rt(360 / n)])].
 
 # Lévy C curve [2]
-c-curve := [:c-curve% |size, level|
-  if level == 0 then fd(size)
-  else {rt(45).
-        c-curve%(size * sqrt(0.5), level - 1).
-        lt(90).
-        c-curve%(size * sqrt(0.5), level - 1).
-        rt(45)}].
-
 # (with-image ("pictures/rp-c-curve-01.png" :width 500 :height 400)
 #     (change-pen (new-pen :width 1 :color cl-colors:+darkblue+))
 #     (turn 90)
@@ -40,8 +32,13 @@ c-curve := [:c-curve% |size, level|
 #     (c-curve 200 12)
 #     (pen-up))
 
-
-
+c-curve := [|size, level|
+  if level == 0 then fd(size)
+  else {rt(45).
+        c-curve(size * sqrt(0.5), level - 1).
+        lt(90).
+        c-curve(size * sqrt(0.5), level - 1).
+        rt(45)}].
  
 #Sierpinski Triangle [3]
 # (with-image ("pictures/rp-sierpinski-triangle-01.png" :width 500 :height 400)
@@ -57,7 +54,6 @@ sierpinski-triangle := [:sierpinski-triangle% |size, level|
     repeat(3, [sierpinski-triangle%(size / 2, level - 1).
                fd(size).
                rt(120)])}].
-
 
 #Snowflake [4] 
 # (with-image ("pictures/rp-snowflake-01.png" :width 500 :height 400)
