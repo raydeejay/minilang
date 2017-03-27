@@ -105,24 +105,30 @@
           *trail*))
   (setf (x *turtle*) x
         (y *turtle*) y))
+(doc! "goto" "Tell the turtle to go to a specific pair of coordinates. This will produce a drawing if the pen is down.")
 
 (define-primitive coords ()
   (cons (x *turtle*) (y *turtle*)))
+(doc! "show" "Tell the turtle to display itself on screen.")
 
 (define-primitive hide ()
   (setf (visible *turtle*) NIL))
+(doc! "hide" "Tell the turtle to hide itself.")
 
 (define-primitive show ()
   (setf (visible *turtle*) T))
+(doc! "pen-up" "Tell the turtle to place the pen down. Further movement will produce a drawing in the turtle's current ink color.")
 
 (define-primitive pen-up ()
   (setf (pen *turtle*) NIL))
+(doc! "pen-up" "Tell the turtle to lift the pen up. Further movement will not produce a drawing.")
 
 (define-primitive pen-down ()
   (setf (pen *turtle*) T))
 
 (define-primitive ink (r g b)
   (setf (color *turtle*) (list r g b)))
+(doc! "ink" "Sets the color of the turtle and its trail. Takes red, green, and blue components as parameters, ranging from 0 to 1. See also the global COLORS.")
 
 (define-primitive pen-size (n)
   (setf (pen-width *turtle*) n))
