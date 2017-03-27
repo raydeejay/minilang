@@ -20,6 +20,8 @@
                ;; (:file "env")
                (:file "compiler")
                (:file "optimizer")
+               (:file "symbols")
+               (:file "help")
                (:file "runtime")
                (:file "display")
                (:file "turtle")
