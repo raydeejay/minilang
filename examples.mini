@@ -1,0 +1,132 @@
+# Examples adapted from Alessandro Serra
+# http://gas2serra.blogspot.com.es/search/label/cl-turtle
+
+# Squares
+# (with-image ("logo001.png" :width 400 :height 400)
+#         (change-pen (new-pen :width 2 :color cl-colors:+violetred+))
+#         (repeat 6
+#             (pen-down)
+#             (repeat 4
+#                 (forward 130)
+#                 (turn 90))
+#             (pen-up)
+#             (turn (/ 360 6))
+#             (change-pen (clone-pen :width (+ 1 (pen-attr :width))))))
+
+# with-image
+# change pen
+gas-squares := [|n|
+  home(). point-to(90). clear().
+  ink(0.8, 0, 1).
+  foreach(range(2, n + 1), [|m|
+                            ps(m).
+                            pd().
+                            repeat(4, [fd(130). rt(90)]).
+                            pu().
+                            rt(360 / n)])].
+
+# Lévy C curve [2]
+c-curve := [:c-curve% |size, level|
+  if level == 0 then fd(size)
+  else {rt(45).
+        c-curve%(size * sqrt(0.5), level - 1).
+        lt(90).
+        c-curve%(size * sqrt(0.5), level - 1).
+        rt(45)}].
+
+# (with-image ("pictures/rp-c-curve-01.png" :width 500 :height 400)
+#     (change-pen (new-pen :width 1 :color cl-colors:+darkblue+))
+#     (turn 90)
+#     (goto -100 50)
+#     (pen-down)
+#     (c-curve 200 12)
+#     (pen-up))
+
+
+
+ 
+#Sierpinski Triangle [3]
+# (with-image ("pictures/rp-sierpinski-triangle-01.png" :width 500 :height 400)
+#     (change-pen (new-pen :width 1 :color cl-colors:+darkblue+))
+#     (turn -90)
+#     (goto 150 -150)
+#     (pen-down)
+#     (sierpinski-triangle 300 7)
+#     (pen-up))
+
+sierpinski-triangle := [:sierpinski-triangle% |size, level|
+  if level > 0 {
+    repeat(3, [sierpinski-triangle%(size / 2, level - 1).
+               fd(size).
+               rt(120)])}].
+
+
+#Snowflake [4] 
+# (with-image ("pictures/rp-snowflake-01.png" :width 500 :height 400)
+#     (change-pen (new-pen :width 1 :color cl-colors:+darkblue+))
+#     (turn -90)
+#     (goto 200 -150)
+#     (pen-down)
+#     (snowflake 400 5)
+#     (pen-up))
+
+snowflake := [:snowflake% |size, level|
+  if level == 0
+    then fd(size)
+    else {snowflake%(size / 3, level - 1).
+          rt(60).
+          snowflake%(size / 3, level - 1).
+          lt(120).
+          snowflake%(size / 3, level - 1).
+          rt(60).
+          snowflake%(size / 3, level - 1)}].
+
+#Dragon [5]
+# (with-image ("pictures/rp-dragon-01.png" :width 500 :height 400)
+#     (change-pen (new-pen :width 1 :color cl-colors:+darkblue+))
+#     (turn -90)
+#     (goto -50 -100)
+#     (pen-down)
+#     (left-dragon 5 11)
+#     (pen-up))
+
+left-dragon := [:left-dragon% |size, level|
+  if level == 0
+    then fd(size)
+    else {left-dragon%(size, level - 1).
+          rt(90).
+          right-dragon(size, level - 1)}].
+
+right-dragon := [:right-dragon% |size, level|
+  if level == 0
+    then fd(size)
+    else {left-dragon(size, level - 1).
+          lt(90).
+          right-dragon%(size, level - 1)}].
+
+#Peano [6]
+# (with-image ("pictures/rp-peano-01.png" :width 500 :height 400)
+#     (change-pen (new-pen :width 1 :color cl-colors:+darkblue+))
+#     (turn -90)
+#     (goto 100 100)
+#     (pen-down)
+#     (peano 3 7)
+#     (pen-up))
+
+peano := [:peano% |size, level, alpha|
+  if level >= 0 {
+    lt(alpha).
+    peano%(size, level - 1, 0 - alpha).
+    fd(size).
+    peano%(size, level - 1, alpha).
+    fd(size).
+    peano%(size, level - 1, 0 - alpha).
+    rt(alpha)}].
+
+
+# [1] https://github.com/gas2serra/cl-turtle
+# [2] http://en.wikipedia.org/wiki/L%C3%A9vy_C_curve
+# [3] http://en.wikipedia.org/wiki/Sierpinski_triangle
+# [4] http://en.wikipedia.org/wiki/Koch_snowflake
+# [5] http://en.wikipedia.org/wiki/Dragon_curve
+# [6] http://en.wikipedia.org/wiki/Peano_curve
