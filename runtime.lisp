@@ -40,6 +40,10 @@
     (intern (string-upcase name)))
   (define-primitive lit (name)
     (intern (string-upcase name) (find-package :minilang-runtime)))
+  (define-primitive bury (name)
+    (setf (get name 'buried) T))
+  (define-primitive unbury (name)
+    (setf (get name 'buried) NIL))
   (defparameter minilang-runtime::print (lambda (v) (princ v)))
   (defparameter minilang-runtime::println (lambda (x) (format t "~A~%" x) x))
   (defparameter minilang-runtime::maps
@@ -132,22 +136,34 @@
                        nil))))))))))
 
 
-(define-primitive help ()
-  (let ((symbols (let ((package (find-package :minilang-runtime)))
-                   (loop :for s :being :the :symbols :of package
-                      :for (n visibility)
-                      := (multiple-value-list (find-symbol (string s)
-                                                           package))
-                      :when (equal visibility :internal)
-                      :collect s))))
-    (format t "Symbols:~%~%")
-    (format t "~{~19A ~}" (sort (loop :for s :in symbols
-                                   :when (boundp s)
-                                   :collect (format nil "~A" s))
-                                'string-lessp))
-    ;; (format t "~%~%Unbound symbols:~%~%")
-    ;; (format t "~{~19A ~}" (sort (loop :for s :in symbols
-    ;;                                :when (not (boundp s))
-    ;;                                :collect (format nil "~A" s))
-    ;;                             'string-lessp))
-    ))
+(define-primitive help (&optional symb)
+  (if symb
+      (doc symb)
+      (let ((symbols (let ((package (find-package :minilang-runtime)))
+                       (loop :for s :being :the :symbols :of package
+                          :for (n visibility)
+                          := (multiple-value-list (find-symbol (string s)
+                                                               package))
+                          :when (equal visibility :internal)
+                          :collect s))))
+        (format t "Symbols:~%~%")
+        (format t "~{~19A ~}" (sort (loop :for s :in symbols
+                                       :when (and (boundp s)
+                                                  (not (get s 'buried)))
+                                       :collect (format nil "~A" s))
+                                    'string-lessp)))))
+
+(define-primitive doc! (symb text)
+  (setf (get (lit symb) 'doc) text))
+(doc! "doc!" "Sets the documentation for a symbol.")
+
+(defun print-documentation (symb)
+  (format t "~A~%" (get (lit symb) 'doc)))
+
+(defun doc (symb &optional (print T))
+  (let ((d (get (lit symb) 'doc)))
+    (when print
+      (if d
+          (progn (print-documentation symb))
+          (progn (format t "No documentation for ~A" symb))))
+    (if d T NIL)))
