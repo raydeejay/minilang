@@ -1,0 +1,115 @@
+#+TITLE: Turtle graphics in Minilang
+#+AUTHOR: Sergi Reyner
+* Minilang
+    Minilang is a programming language and environment in the spirit of
+    Logo, built on top of Common Lisp.
+    Although it's built on top of Common Lisp, it doesn't try to provide all the features it has.
+
+** Quick start
+   Minilang is an expression-based language.
+
+   Expressions are separated by a period '*.*'.
+
+   Expressions can be grouped using braces *{* *}*.
+
+   The value of a group of expressions, called a *prog*, is the value
+   of its last expression.
+
+  Minilang can do infix math:
+   #+BEGIN_SRC minilang
+     2 + 3 * 4 .    ## 14
+     (2 + 3) * 4 .  ## 20
+   #+END_SRC
+
+   It can also assign values to variables:
+   #+BEGIN_SRC minilang
+     a := 2 + 3 * 4 .
+     a.  ## 14
+   #+END_SRC
+
+   Variables have scope:
+   LET
+
+   Minilang can also do logic:
+   && || T NIL truthy falsy
+   
+
+   Conditionals are expressions too:
+   #+BEGIN_SRC minilang
+     print(if 2 then "two" else "three").  ## two
+   #+END_SRC
+
+   Functions are values:
+   #+BEGIN_SRC minilang
+     f := [print(3)].
+     f(). ## will print 3 and return 3
+   #+END_SRC
+
+   Functions can take parameters:
+   #+BEGIN_SRC minilang
+     f := [|x| x + 3].
+     f(2). ## 5
+   #+END_SRC
+
+   Functions can also have a name to refer to themselves:
+   #+BEGIN_SRC minilang
+     f := [:me |a|
+           if a != 0
+             then {print(a). me(a - 1)}].
+     f(5). ## will print 54321
+   #+END_SRC
+
+   A comma separates elements in variable declaration and parameters lists.
+
+
+** Syntax
+   - Expression based
+   - Period to separate statements
+   - Comma as separator in varlists
+   - Call syntax
+   - Prog syntax
+   - Block syntax
+** Data structures
+*** List
+** Primitives
+*** Math operators
+*** Logical operators
+*** Functions
+*** Specials
+** Compilation
+*** The AST
+** Turtle Graphics
+    Talk generally about turtle graphics
+  Talk about turtle graphics in Minilang
+*** Commands
+**** Moving around
+***** forward(), fd()
+***** back(), bk()
+***** left(), lt()
+***** right(), rt()
+***** goto()
+***** home()
+**** Controlling the pen
+***** pen-up(), pu()
+***** pen-down(), pd()
+***** ink()
+**** The drawing field
+***** clear()
+*** The stacks
+**** Color stack
+**** Position stack
+**** Pen stack
+
+* Notes
+  Some ideas to make the language "easier" and to be implemented:
+  - erase(?)
+  - sprites
+  - file I/O
+  - help commands to examine the environment and such
+  - properly parse periods after numbers
+  - provide a restart to remain in the repl
+  - catch most errors
+  - while/until/loop
+  - remove parens?
+  - call syntax?
+
