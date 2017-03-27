@@ -38,6 +38,8 @@
   (defparameter minilang-runtime::gensym 'gensym%)
   (define-primitive symb (name)
     (intern (string-upcase name)))
+  (define-primitive lit (name)
+    (intern (string-upcase name) (find-package :minilang-runtime)))
   (defparameter minilang-runtime::print (lambda (v) (princ v)))
   (defparameter minilang-runtime::println (lambda (x) (format t "~A~%" x) x))
   (defparameter minilang-runtime::maps
