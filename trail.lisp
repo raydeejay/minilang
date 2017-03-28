@@ -32,6 +32,9 @@
 (defmethod add ((node node) vertex)
   (push vertex (vertices node)))
 
+(defmethod emptyp ((node node))
+  (emptyp (vertices node)))
+
 (defmethod setup ((node node))
   (destructuring-bind (r g b)
       (color node)
