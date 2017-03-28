@@ -1,18 +1,8 @@
 ;;; -*- Mode:Lisp; Syntax:ANSI-Common-Lisp; Coding:utf-8 -*-
 
 (in-package #:minilang)
-;; a trail has nodes
 
-;; each kind of node has
-;; - a primitive
-;; - a setup method which executes the appropriate commands
-
-;; each node has
-;; - a list of elements
-
-;; for each in trail
-;;   read primitive
-
+;; trail
 (defclass trail ()
   ((nodes :accessor nodes :initarg :nodes :initform nil)))
 
