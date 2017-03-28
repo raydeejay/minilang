@@ -88,9 +88,11 @@
 (define-primitive goto (x y)
   (if (pen *turtle*)
       (add (car *trail*)
-           (list (x *turtle*) (y *turtle*) x y
-                 (color *turtle*) (pen-width *turtle*)))
-      (push (make-instance 'lines-node) *trail*))
+           (list (x *turtle*) (y *turtle*) x y))
+      (push (make-instance 'lines-node
+                           :color (color *turtle*)
+                           :width (pen-width *turtle*))
+            *trail*))
   (setf (x *turtle*) x
         (y *turtle*) y))
 (doc! "goto" "Tell the turtle to go to a specific pair of coordinates. This will produce a drawing if the pen is down.")
