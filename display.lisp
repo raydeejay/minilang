@@ -34,32 +34,33 @@
   (gl:matrix-mode :modelview))
 
 (defun idle-func (win)
-  (gl:load-identity)
-  (gl-setup *display-width* *display-height*)
-
-  ;; clear the display
-  (destructuring-bind (r g b a)
-      *paper*
-    (gl:clear-color r g b a))
-  (gl:clear :color-buffer :depth-buffer)
-
   ;; redraw lines
-  (loop :for node :in (nodes *trail*) :doing
-     (destructuring-bind (r g b)
-         (color node)
-       (gl:color r g b))
-     (gl:line-width (width node))
-     (gl:with-primitives (primitive node)
-       (mapc (lambda (vertex)
-               (gl:vertex (car vertex) (cadr vertex)))
-             (vertices node))))
-  (gl:flush)
+  (loop :for node :in (nodes *trail*)
+     :initially (progn (gl:load-identity)
+                       (gl-setup *display-width* *display-height*)
+                       ;; clear the display
+                       (destructuring-bind (r g b a)
+                           *paper*
+                         (gl:clear-color r g b a))
+                       (gl:clear :color-buffer :depth-buffer))
 
-  ;; draw turtle
-  (draw-turtle)
+     :doing (destructuring-bind (r g b)
+                (color node)
+              (gl:color r g b)
+              (gl:line-width (width node)))
 
-  ;; stuff
-  (sdl2:gl-swap-window win))
+     :when (has-partial-shape-p node)
+     :do (gl:with-primitives :line-strip
+           (mapc (lambda (v) (apply 'gl:vertex v))
+                 (partial-shape node)))
+
+     :do (gl:with-primitives (primitive node)
+           (mapc (lambda (v) (apply 'gl:vertex v))
+                 (complete-shapes node)))
+
+     :finally (progn (gl:flush)
+                     (draw-turtle)
+                     (sdl2:gl-swap-window win))))
 
 (defun open-display% ()
   (sdl2:with-init (:everything)
