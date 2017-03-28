@@ -13,6 +13,22 @@
 ;; for each in trail
 ;;   read primitive
 
+(defclass trail ()
+  ((nodes :accessor nodes :initarg :nodes :initform nil)))
+
+(defmethod add ((trail trail) node-class)
+  ;; remove top node if it's empty
+  (when (emptyp (car (nodes trail)))
+    (pop (nodes trail)))
+  (push (make-instance node-class
+                       :color (color *turtle*)
+                       :width (pen-width *turtle*))
+        (nodes trail)))
+
+(defmethod top ((trail trail))
+  (car (nodes trail)))
+
+
 (defclass node ()
   ((primitive :accessor primitive :initarg :primitive)
    (vertices  :accessor vertices  :initarg :vertices  :initform nil)
