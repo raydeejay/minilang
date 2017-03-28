@@ -3,6 +3,7 @@
 (in-package #:minilang)
 
 (defparameter *display-window* nil)
+(defparameter *display-thread* nil)
 (defparameter *display-width* 640)
 (defparameter *display-height* 400)
 
@@ -41,14 +42,17 @@
   (gl:clear :color-buffer :depth-buffer)
 
   ;; redraw lines
-  (mapc (lambda (coords)
-          (let ((color (fifth coords)))
-            (gl:color (first color) (second color) (third color)))
-          (gl:line-width (sixth coords))
-          (gl:with-primitives :lines
-            (gl:vertex (first coords) (second coords))
-            (gl:vertex (third coords) (fourth coords))))
-        *trail*)
+  (loop :for node :in *trail* :doing
+     (with-slots (vertices)
+         node
+       (mapc (lambda (coords)
+               (let ((color (fifth coords)))
+                 (gl:color (first color) (second color) (third color)))
+               (gl:line-width (sixth coords))
+               (gl:with-primitives :lines
+                 (gl:vertex (first coords) (second coords))
+                 (gl:vertex (third coords) (fourth coords))))
+             (vertices node))))
   (gl:flush)
 
   ;; draw turtle
@@ -66,7 +70,7 @@
       (sdl2:with-renderer (renderer win :flags '(:accelerated))
         (sdl2:with-gl-context (gl-context win)
           (init-turtle)
-          (setf *trail* nil)
+          (setf *trail* (list (make-instance 'lines-node)))
 
           (sdl2:gl-make-current win gl-context)
           (gl-setup *display-width* *display-height*)
@@ -139,7 +143,7 @@
     (gl:clear-color (first *paper*) (second *paper*) (third *paper*) (fourth *paper*))
     (gl:clear :color-buffer)
     (draw-turtle)
-    (setf *trail* nil)))
+    (setf *trail* (list (make-instance 'lines-node)))))
 
 (define-primitive paper (r g b)
   (setf *paper* (list r g b 1)))

@@ -24,6 +24,7 @@
                (:file "help")
                (:file "runtime")
                (:file "display")
+               (:file "trail")
                (:file "turtle")
                (:file "minilang")))
 

@@ -9,14 +9,13 @@
    (color     :accessor color     :initarg :color     :initform (list 1 1 1))
    (pen-width :accessor pen-width :initarg :pen-width :initform 1)
    (visible   :accessor visible   :initarg :visible   :initform T)
-   (pen       :accessor pen       :initarg :pen       :initform T)))
+   (pen       :accessor pen       :initarg :pen       :initform T)
+   (primitive :accessor primitive :initarg :primitive :initform :lines)))
 
 (defun make-turtle ()
     (make-instance 'turtle))
 
 (defparameter *turtle* nil)
-(defparameter *trail* nil
-  "Holds a list of lines to redraw each frame.")
 
 (defun init-turtle ()
   (setf *turtle* (make-turtle)))
@@ -63,11 +62,16 @@
     (when (and (pen *turtle*)
                (or (/= old-x (x *turtle*))
                    (/= old-y (y *turtle*))))
-      (push (list (x *turtle*) (y *turtle*)
-                  old-x old-y
-                  (color *turtle*)
-                  (pen-width *turtle*))
-            *trail*))))
+      ;; (push (list (x *turtle*) (y *turtle*)
+      ;;             old-x old-y
+      ;;             (color *turtle*)
+      ;;             (pen-width *turtle*))
+      ;;       *trail*)
+      (add (car *trail*)
+           (list (x *turtle*) (y *turtle*)
+                 old-x old-y
+                 (color *turtle*)
+                 (pen-width *turtle*))))))
 
 (define-primitive back (n)
   (forward (- n)))
@@ -98,9 +102,11 @@
   (goto 320 200))
 
 (define-primitive goto (x y)
-  (when (pen *turtle*)
-    (push (list (x *turtle*) (y *turtle*) x y (color *turtle*) (pen-width *turtle*))
-          *trail*))
+  (if (pen *turtle*)
+      (add (car *trail*)
+           (list (x *turtle*) (y *turtle*) x y
+                 (color *turtle*) (pen-width *turtle*)))
+      (push (make-instance 'lines-node) *trail*))
   (setf (x *turtle*) x
         (y *turtle*) y))
 (doc! "goto" "Tell the turtle to go to a specific pair of coordinates. This will produce a drawing if the pen is down.")
