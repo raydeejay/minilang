@@ -44,16 +44,15 @@
   (gl:clear :color-buffer :depth-buffer)
 
   ;; redraw lines
-  (loop :for node :in *trail* :doing
-     (mapc (lambda (coords)
-             (destructuring-bind (r g b)
-                 (color node)
-               (gl:color r g b))
-             (gl:line-width (width node))
-             (gl:with-primitives (primitive node)
-               (gl:vertex (first coords) (second coords))
-               (gl:vertex (third coords) (fourth coords))))
-           (vertices node)))
+  (loop :for node :in (nodes *trail*) :doing
+     (destructuring-bind (r g b)
+         (color node)
+       (gl:color r g b))
+     (gl:line-width (width node))
+     (gl:with-primitives (primitive node)
+       (mapc (lambda (vertex)
+               (gl:vertex (car vertex) (cadr vertex)))
+             (vertices node))))
   (gl:flush)
 
   ;; draw turtle
@@ -71,7 +70,8 @@
       (sdl2:with-renderer (renderer win :flags '(:accelerated))
         (sdl2:with-gl-context (gl-context win)
           (init-turtle)
-          (setf *trail* (list (make-instance 'lines-node)))
+          (setf *trail* (make-instance 'trail
+                                       :nodes (list (make-instance 'lines-node))))
 
           (sdl2:gl-make-current win gl-context)
           (gl-setup *display-width* *display-height*)
@@ -143,21 +143,16 @@
 
 (define-primitive clear ()
   (sdl2:in-main-thread ()
-    (gl:clear-color (first *paper*) (second *paper*) (third *paper*) (fourth *paper*))
+    (destructuring-bind (r g b a)
+        *paper*
+      (gl:clear-color r g b a))
     (gl:clear :color-buffer)
     (draw-turtle)
-    (setf *trail* (list (make-instance 'lines-node)))))
+    (setf *trail* (make-instance 'trail
+                                 :nodes (list (make-instance 'lines-node))))))
 
-(define-primitive paper (r g b)
-  (setf *paper* (list r g b 1)))
-
-;; quick and dirty
-(define-primitive save-display (filename)
-  ;; doesn't work...
-  (sdl2:raise-window *display-window*)
-  (uiop/run-program:run-program (format nil
-                                        "gnome-screenshot -w -B -f \"~A\""
-                                        filename)))
+(define-primitive paper (r g b &optional (a 1.0))
+  (setf *paper* (list r g b a)))
 
 (define-primitive save-svg (filename)
   (let ((scene (svg:make-svg-toplevel 'svg:svg-1.2-toplevel

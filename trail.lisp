@@ -36,6 +36,10 @@
    (width     :accessor width     :initarg :width     :initform 1)))
 
 (defmethod add ((node node) vertex)
+  (when (emptyp (vertices node))
+    ;; add the current position to begin with
+    (push (list (x *turtle*) (y *turtle*))
+          (vertices node)))
   (push vertex (vertices node)))
 
 (defmethod emptyp ((node node))
@@ -53,7 +57,7 @@
 
 
 (defclass lines-node (node)
-  ((primitive :reader primitive :initform :lines)))
+  ((primitive :reader primitive :initform :line-strip)))
 
 
 (defclass triangles-node (node)

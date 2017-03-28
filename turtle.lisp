@@ -87,12 +87,9 @@
 
 (define-primitive goto (x y)
   (if (pen *turtle*)
-      (add (car *trail*)
-           (list (x *turtle*) (y *turtle*) x y))
-      (push (make-instance 'lines-node
-                           :color (color *turtle*)
-                           :width (pen-width *turtle*))
-            *trail*))
+      (add (top *trail*)
+           (list x y))
+      (add *trail* 'lines-node))
   (setf (x *turtle*) x
         (y *turtle*) y))
 (doc! "goto" "Tell the turtle to go to a specific pair of coordinates. This will produce a drawing if the pen is down.")
@@ -119,12 +116,26 @@
 (define-primitive ink (r g b)
   (let ((color (list r g b)))
     (setf (color *turtle*) color)
-    (push (make-instance 'lines-node :color color :width (pen-width *turtle*)) *trail*)))
+    (push (make-instance 'lines-node
+                         :color color
+                         :width (pen-width *turtle*))
+          (nodes *trail*))))
 (doc! "ink" "Sets the color of the turtle and its trail. Takes red, green, and blue components as parameters, ranging from 0 to 1. See also the global COLORS.")
 
 (define-primitive pen-size (n)
   (setf (pen-width *turtle*) n)
-  (push (make-instance 'lines-node :width n :color (color *turtle*)) *trail*))
+  (push (make-instance 'lines-node
+                       :width n
+                       :color (color *turtle*))
+        (nodes *trail*)))
+
+(define-primitive shape (shape)
+  (switch (shape :test 'equal)
+    ("lines" (setf (primitive *turtle*) :line-strip)
+             (add *trail* 'lines-node))
+    ("triangles" (setf (primitive *turtle*) :triangles)
+                 (add *trail* 'triangles-node))
+    (otherwise (error "~A is not a valid argument for SHAPE." shape))))
 
 (define-primitive-alias ht hide)
 (define-primitive-alias st show)
