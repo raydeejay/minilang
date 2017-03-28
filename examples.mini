@@ -124,3 +124,15 @@ peano := [:peano% |size, level, alpha|
 # [4] http://en.wikipedia.org/wiki/Koch_snowflake
 # [5] http://en.wikipedia.org/wiki/Dragon_curve
 # [6] http://en.wikipedia.org/wiki/Peano_curve
+
+
+# using SHAPE
+# try fan(23)
+fan := [|n|
+  shape("triangles").
+  repeat(n, [lt(60).
+             fd(100).
+	     rt(120).
+	     fd(10).
+	     home()]).
+  shape("lines")].
