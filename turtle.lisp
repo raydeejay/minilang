@@ -50,28 +50,12 @@
 ;; turtle primitives
 (define-primitive forward (n)
   (let ((dx (* n (cos (to-radians (heading *turtle*)))))
-        (dy (* n (sin (to-radians (heading *turtle*)))))
-        (old-x (x *turtle*))
-        (old-y (y *turtle*)))
-    ;; decrement because the Y axis is backwards,
-    ;; this should be dealt with using a transform function...
-    (incf (x *turtle*) dx)
-    (decf (y *turtle*) dy)
-
-    ;; add current line to trail
-    (when (and (pen *turtle*)
-               (or (/= old-x (x *turtle*))
-                   (/= old-y (y *turtle*))))
-      ;; (push (list (x *turtle*) (y *turtle*)
-      ;;             old-x old-y
-      ;;             (color *turtle*)
-      ;;             (pen-width *turtle*))
-      ;;       *trail*)
-      (add (car *trail*)
-           (list (x *turtle*) (y *turtle*)
-                 old-x old-y
-                 (color *turtle*)
-                 (pen-width *turtle*))))))
+        (dy (* n (sin (to-radians (heading *turtle*))))))
+    ;; calculate the new coordinates and call goto
+    ;; decrement because the Y axis is backwards
+    (let ((new-x (+ (x *turtle*) dx))
+          (new-y (- (y *turtle*) dy)))
+      (goto new-x new-y))))
 
 (define-primitive back (n)
   (forward (- n)))
