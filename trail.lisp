@@ -19,16 +19,6 @@
    (color     :accessor color     :initarg :color     :initform '(1 1 1))
    (width     :accessor width     :initarg :width     :initform 1)))
 
-(defclass lines-node (node)
-  ((primitive :reader primitive :initform :lines)))
-
-(defclass triangles-node (node)
-  ((primitive :reader   primitive :initform :triangles)
-   (fill?     :accessor fill?     :initform T)))
-
-(defparameter *trail* (list (make-instance 'lines-node))
-  "Holds a list of nodes to redraw each frame.")
-
 (defmethod add ((node node) vertex)
   (push vertex (vertices node)))
 
@@ -41,8 +31,19 @@
     (gl:color r g b))
   (gl:line-width (width node)))
 
-(defmethod setup ((node triangles-node))
-  (when (fill? node)
-    ;; something
-    )
-  (call-next-method))
+
+(defclass points-node (node)
+  ((primitive :reader primitive :initform :points)))
+
+
+(defclass lines-node (node)
+  ((primitive :reader primitive :initform :lines)))
+
+
+(defclass triangles-node (node)
+  ((primitive :reader   primitive :initform :triangles)))
+
+
+
+(defparameter *trail* (list (make-instance 'lines-node))
+  "Holds a list of nodes to redraw each frame.")
