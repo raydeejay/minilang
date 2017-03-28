@@ -38,7 +38,9 @@
   (gl-setup *display-width* *display-height*)
 
   ;; clear the display
-  (gl:clear-color (first *paper*) (second *paper*) (third *paper*) (fourth *paper*))
+  (destructuring-bind (r g b a)
+      *paper*
+    (gl:clear-color r g b a))
   (gl:clear :color-buffer :depth-buffer)
 
   ;; redraw lines
@@ -73,7 +75,9 @@
 
           (sdl2:gl-make-current win gl-context)
           (gl-setup *display-width* *display-height*)
-          (gl:clear-color (first *paper*) (second *paper*) (third *paper*) (fourth *paper*))
+          (destructuring-bind (r g b a)
+              *paper*
+            (gl:clear-color r g b a))
           (gl:clear :color-buffer :depth-buffer)
 
           (sdl2:with-event-loop (:method :poll)
