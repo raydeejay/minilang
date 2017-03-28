@@ -30,22 +30,16 @@
   "Holds a list of nodes to redraw each frame.")
 
 (defmethod add ((node node) vertex)
-  (with-slots (vertices)
-      node
-    (push vertex vertices)))
+  (push vertex (vertices node)))
 
 (defmethod setup ((node node))
-  (with-slots (color width)
-      node
-    (destructuring-bind (r g b)
-        (color node)
-      (gl:color r g b))
-    (gl:line-width width)))
+  (destructuring-bind (r g b)
+      (color node)
+    (gl:color r g b))
+  (gl:line-width (width node)))
 
 (defmethod setup ((node triangles-node))
-  (with-slots (fill?)
-      node
-    (when fill?)
+  (when (fill? node)
     ;; something
     )
   (call-next-method))

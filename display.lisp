@@ -43,16 +43,15 @@
 
   ;; redraw lines
   (loop :for node :in *trail* :doing
-     (with-slots (vertices)
-         node
-       (mapc (lambda (coords)
-               (let ((color (fifth coords)))
-                 (gl:color (first color) (second color) (third color)))
-               (gl:line-width (sixth coords))
-               (gl:with-primitives :lines
-                 (gl:vertex (first coords) (second coords))
-                 (gl:vertex (third coords) (fourth coords))))
-             (vertices node))))
+     (mapc (lambda (coords)
+             (destructuring-bind (r g b)
+                 (color node)
+               (gl:color r g b))
+             (gl:line-width (width node))
+             (gl:with-primitives (primitive node)
+               (gl:vertex (first coords) (second coords))
+               (gl:vertex (third coords) (fourth coords))))
+           (vertices node)))
   (gl:flush)
 
   ;; draw turtle
