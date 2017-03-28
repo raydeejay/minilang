@@ -63,7 +63,7 @@
                            :w *display-width* :h *display-height*
                            :flags '(:shown :opengl))
       (setf *display-window* win)
-      (sdl2:with-renderer (renderer win)
+      (sdl2:with-renderer (renderer win :flags '(:accelerated))
         (sdl2:with-gl-context (gl-context win)
           (init-turtle)
           (setf *trail* nil)
