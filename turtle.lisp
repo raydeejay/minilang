@@ -117,11 +117,14 @@
 (doc! "pen-down" "Tell the turtle to place the pen down. Further movement will produce a drawing in the turtle's current ink color.")
 
 (define-primitive ink (r g b)
-  (setf (color *turtle*) (list r g b)))
+  (let ((color (list r g b)))
+    (setf (color *turtle*) color)
+    (push (make-instance 'lines-node :color color :width (pen-width *turtle*)) *trail*)))
 (doc! "ink" "Sets the color of the turtle and its trail. Takes red, green, and blue components as parameters, ranging from 0 to 1. See also the global COLORS.")
 
 (define-primitive pen-size (n)
-  (setf (pen-width *turtle*) n))
+  (setf (pen-width *turtle*) n)
+  (push (make-instance 'lines-node :width n :color (color *turtle*)) *trail*))
 
 (define-primitive-alias ht hide)
 (define-primitive-alias st show)
