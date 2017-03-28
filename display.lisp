@@ -114,25 +114,25 @@
 
 ;; lines include the end point, too (yes?)
 ;; so do compensate here, or maybe we should compensate somewhere else...?
-(define-primitive line (x y xt yt)
-  "Draw a line."
-  (push (list x y xt yt (color *turtle*) (pen-width *turtle*))
-        *trail*))
+;; (define-primitive line (x y xt yt)
+;;   "Draw a line."
+;;   (push (list x y xt yt (color *turtle*) (pen-width *turtle*))
+;;         *trail*))
 
 ;; we need to compensate for rectangles too?
-(define-primitive rectangle (x y w h)
-  "Draw a rectangle."
-  (mapcar (lambda (p) (push p *trail*))
-          `(,(list  x        y        (+ x w)  y        (color *turtle*) (pen-width *turtle*))
-             ,(list x        y        x        (+ y h)  (color *turtle*) (pen-width *turtle*))
-             ,(list (+ x w)  (+ y h)  (+ x w)  y        (color *turtle*) (pen-width *turtle*))
-             ,(list (+ x w)  (+ y h)  x        (+ y h)  (color *turtle*) (pen-width *turtle*)))))
+;; (define-primitive rectangle (x y w h)
+;;   "Draw a rectangle."
+;;   (mapcar (lambda (p) (push p *trail*))
+;;           `(,(list  x        y        (+ x w)  y        (color *turtle*) (pen-width *turtle*))
+;;              ,(list x        y        x        (+ y h)  (color *turtle*) (pen-width *turtle*))
+;;              ,(list (+ x w)  (+ y h)  (+ x w)  y        (color *turtle*) (pen-width *turtle*))
+;;              ,(list (+ x w)  (+ y h)  x        (+ y h)  (color *turtle*) (pen-width *turtle*)))))
 
 ;; Compensating the missing pixel/point/whatever
-(define-primitive plot (x y)
-  "Draw a single point."
-  (push (list (1- x) (1- y) x y (color *turtle*) (pen-width *turtle*))
-        *trail*))
+;; (define-primitive plot (x y)
+;;   "Draw a single point."
+;;   (push (list (1- x) (1- y) x y (color *turtle*) (pen-width *turtle*))
+;;         *trail*))
 
 (define-primitive clear ()
   (sdl2:in-main-thread ()
