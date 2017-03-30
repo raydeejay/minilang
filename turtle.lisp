@@ -10,41 +10,93 @@
    (pen-width :accessor pen-width :initarg :pen-width :initform 1)
    (visible   :accessor visible   :initarg :visible   :initform T)
    (pen       :accessor pen       :initarg :pen       :initform T)
+   (trail     :accessor trail     :initarg :trail     :initform nil)
    (primitive :accessor primitive :initarg :primitive :initform :lines)))
 
 (defun make-turtle ()
     (make-instance 'turtle))
 
-(defparameter *turtle* nil)
+(defparameter *turtle* nil
+  "The current turtle.")
+(defparameter *turtles* nil
+  "A list of all the turtles.")
 
 (defun init-turtle ()
-  (setf *turtle* (make-turtle)))
+  (let ((turtle (make-turtle)))
+    (setf *turtles* (append *turtles* (list turtle)))
+    (setf (trail turtle)
+          (make-instance 'trail
+                         :nodes (list (make-instance 'lines-node))))
+    (setf *turtle* turtle)))
+
+(define-primitive turtle (index)
+  (setf *turtle* (nth index *turtles*)))
+
+(define-primitive new ()
+  (init-turtle))
+
+(define-primitive clone ()
+  (let ((trt *turtle*))
+    (init-turtle)
+    (apply 'ink (color trt))
+    (pen-size (pen-width trt))
+    (setf (x *turtle*) (x trt)
+          (y *turtle*) (y trt)
+          (heading *turtle*) (heading trt))))
+
 
 (defun draw-turtle ()
-  (when (visible *turtle*)
-    (let ((anchor (cons (x *turtle*)
-                        (y *turtle*))))
-      (labels ((transform (p)
-                 (from-origin
-                  (rotate-point
-                   (to-origin p anchor)
-                   (heading *turtle*))
-                  anchor)))
-        (let ((p1 (transform
-                   (cons (car anchor)
-                         (- (cdr anchor) 4))))
-              (p2 (transform
-                   (cons (+ 13 (car anchor))
-                         (cdr anchor))))
-              (p3 (transform
-                   (cons (car anchor)
-                         (+ 4 (cdr anchor))))))
-          (gl:with-primitive :triangles
-            (apply 'gl:color (color *turtle*))
-            (gl:vertex (car p1) (cdr p1))
-            (gl:vertex (car p2) (cdr p2))
-            (gl:vertex (car p3) (cdr p3)))
-          (gl:flush))))))
+  (loop :for turtle :in *turtles* :do
+     (when (visible turtle)
+       (let ((anchor (cons (x turtle)
+                           (y turtle))))
+         (labels ((transform (p)
+                    (from-origin
+                     (rotate-point
+                      (to-origin p anchor)
+                      (heading turtle))
+                     anchor)))
+           (let ((p1 (transform
+                         (cons (car anchor)
+                               (- (cdr anchor) 4))))
+                 (p2 (transform
+                         (cons (+ 13 (car anchor))
+                               (cdr anchor))))
+                 (p3 (transform
+                         (cons (car anchor)
+                               (+ 4 (cdr anchor))))))
+             (gl:with-primitive :triangles
+               (apply 'gl:color (color turtle))
+               (gl:vertex (car p1) (cdr p1))
+               (gl:vertex (car p2) (cdr p2))
+               (gl:vertex (car p3) (cdr p3)))))))))
+
+(defun render-turtles-for-picking ()
+  (loop :for turtle :in *turtles*
+     :for c :from 1 :do
+     (when (visible turtle)
+       (let ((anchor (cons (x turtle)
+                           (y turtle))))
+         (labels ((transform (p)
+                    (from-origin
+                     (rotate-point
+                      (to-origin p anchor)
+                      (heading turtle))
+                     anchor)))
+           (let ((p1 (transform
+                         (cons (car anchor)
+                               (- (cdr anchor) 4))))
+                 (p2 (transform
+                         (cons (+ 13 (car anchor))
+                               (cdr anchor))))
+                 (p3 (transform
+                         (cons (car anchor)
+                               (+ 4 (cdr anchor))))))
+             (gl:with-primitive :triangles
+               (apply 'gl:color (list (/ c 255.0) 0 0))
+               (gl:vertex (car p1) (cdr p1))
+               (gl:vertex (car p2) (cdr p2))
+               (gl:vertex (car p3) (cdr p3)))))))))
 
 
 ;; turtle primitives
@@ -82,14 +134,13 @@
           (/ (* (atan dy dx) 180) pi))))
 
 (define-primitive home ()
-  (point-at 320 200)
   (goto 320 200))
 
 (define-primitive goto (x y)
   (if (pen *turtle*)
-      (add (top *trail*)
+      (add (top (trail *turtle*))
            (list x y))
-      (add *trail* 'lines-node))
+      (add (trail *turtle*) 'lines-node))
   (setf (x *turtle*) x
         (y *turtle*) y))
 (doc! "goto" "Tell the turtle to go to a specific pair of coordinates. This will produce a drawing if the pen is down.")
@@ -119,7 +170,7 @@
     (push (make-instance 'lines-node
                          :color color
                          :width (pen-width *turtle*))
-          (nodes *trail*))))
+          (nodes (trail *turtle*)))))
 (doc! "ink" "Sets the color of the turtle and its trail. Takes red, green, and blue components as parameters, ranging from 0 to 1. See also the global COLORS.")
 
 (define-primitive pen-size (n)
@@ -127,14 +178,16 @@
   (push (make-instance 'lines-node
                        :width n
                        :color (color *turtle*))
-        (nodes *trail*)))
+        (nodes (trail *turtle*))))
 
 (define-primitive shape (shape)
   (switch (shape :test 'equal)
     ("lines" (setf (primitive *turtle*) :line-strip)
-             (add *trail* 'lines-node))
+             (add (trail *turtle*) 'lines-node))
     ("triangles" (setf (primitive *turtle*) :triangles)
-                 (add *trail* 'triangles-node))
+                 (add (trail *turtle*) 'triangles-node))
+    ("quads" (setf (primitive *turtle*) :quads)
+             (add (trail *turtle*) 'quads-node))
     (otherwise (error "~A is not a valid argument for SHAPE." shape))))
 
 (define-primitive-alias ht hide)

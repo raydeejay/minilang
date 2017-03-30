@@ -11,7 +11,9 @@
                #:sdl2
                #:cl-opengl
                #:bordeaux-threads
-               #:cl-svg)
+               #:cl-svg
+               #:cl-devil
+               #:cl-ilut)
   :components ((:file "package")
                (:file "utils")
                (:file "input-stream")
@@ -23,6 +25,7 @@
                (:file "symbols")
                (:file "help")
                (:file "runtime")
+               (:file "textures")
                (:file "display")
                (:file "trail")
                (:file "turtle")
